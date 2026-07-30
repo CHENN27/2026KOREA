@@ -9,7 +9,6 @@
   <meta name="apple-mobile-web-app-title" content="PAIKAN" />
   <title>首爾散步計畫｜PAIKAN</title>
   
-  <!-- Vue 3、Tailwind CSS、Lucide Icons -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
   <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.js"></script>
@@ -31,6 +30,9 @@
     :root {
       --ink: #40514d;
       --fog: #fbfcf9;
+      --line: #eaf0ec;
+      --sage: #a9d4c6;
+      --sageDeep: #69a494;
     }
 
     * {
@@ -70,17 +72,11 @@
 
     .paper-card {
       background: rgba(255, 255, 255, 0.98);
-      border: 1px solid var(--color-line);
+      border: 1px solid var(--line);
       box-shadow: 0 12px 30px rgba(74, 107, 98, 0.07);
     }
 
-    .soft-card {
-      background: linear-gradient(145deg, #a9d4c6 0%, #69a494 100%);
-      color: white;
-      box-shadow: 0 16px 34px rgba(105, 164, 148, 0.25);
-    }
-
-    /* 字體大小設定 */
+    /* 字體大小設定 (Aa功能) */
     .font-large .text-xs { font-size: 0.875rem !important; line-height: 1.35rem !important; }
     .font-xlarge .text-xs { font-size: 1rem !important; line-height: 1.5rem !important; }
     .font-large .text-sm { font-size: 1rem !important; line-height: 1.55rem !important; }
@@ -105,7 +101,6 @@
       .modal-backdrop { padding: 0.5rem !important; }
       .modal-sheet { width: 100% !important; max-width: calc(100vw - 1rem) !important; padding: 1rem !important; border-radius: 24px !important; }
       .modal-sheet input, .modal-sheet select, .modal-sheet textarea { width: 100%; min-height: 48px; padding: 0.75rem 0.875rem; border-radius: 16px; }
-      .form-grid-two { grid-template-columns: minmax(0, 1fr) !important; gap: 0.75rem !important; }
     }
 
     .safe-top { padding-top: max(14px, env(safe-area-inset-top)); }
@@ -122,16 +117,15 @@
       content: "";
       position: absolute;
       left: 18px;
-      top: 32px;
+      top: 36px;
       bottom: -18px;
       width: 1.5px;
-      background: var(--color-line);
+      background: var(--line);
     }
     .timeline-line:last-child::before { display: none; }
 
     .modal-backdrop { animation: fade-in 0.2s ease both; }
     .modal-sheet { animation: sheet-up 0.28s cubic-bezier(0.2, 0.8, 0.2, 1) both; overflow-x: hidden; }
-    .form-grid-two { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 0.75rem; align-items: start; }
     
     .toast { animation: toast-in 2.5s ease both; }
     @keyframes toast-in {
@@ -143,7 +137,7 @@
     @media (min-width: 700px) {
       body { padding: 22px 0; }
       .app-shell { min-height: calc(100vh - 44px); border-radius: 34px; border: 1px solid rgba(255, 255, 255, 0.8); }
-      .bottom-nav { width: 558px; left: 50% !important; transform: translateX(-50%); border-radius: 0 0 34px 34px; border-left: 1px solid var(--color-line); border-right: 1px solid var(--color-line); }
+      .bottom-nav { width: 558px; left: 50% !important; transform: translateX(-50%); border-radius: 0 0 34px 34px; border-left: 1px solid var(--line); border-right: 1px solid var(--line); }
     }
   </style>
 </head>
@@ -151,59 +145,41 @@
   <div id="app" v-cloak>
     <main class="app-shell" :class="['font-' + fontSize]">
       
-      <!-- 頂部標題列 -->
-      <header class="app-header safe-top sticky top-0 z-30 border-b border-line bg-fog/95 px-5 pb-3 pt-3 backdrop-blur-xl">
-        <div class="flex items-center justify-between">
-          <!-- 左側：城市 (純文字與座標圖示) -->
-          <div class="flex items-center gap-1.5 font-bold text-ink text-lg tracking-wider">
-            <i data-lucide="map-pin" class="h-5 w-5 text-sageDeep"></i>
-            {{ trip.city.toUpperCase() }}
-          </div>
-
-          <!-- 右側：天氣與文字設定 -->
-          <div class="flex items-center gap-4">
-            <div class="flex items-center gap-1.5 font-bold text-ink/80">
-              <i data-lucide="cloud" class="h-[18px] w-[18px] text-sageDeep"></i>
-              <span class="text-sm">天氣</span>
+      <!-- ==================== 1. 今日 (Today) ==================== -->
+      <div v-if="currentTab === 'today'" class="tab-panel pb-28">
+        <!-- 今日頂部極簡標題列 -->
+        <header class="safe-top sticky top-0 z-30 bg-fog/95 px-5 pb-3 pt-5 backdrop-blur-xl border-b border-line">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-1.5 font-bold text-ink text-lg tracking-wider">
+              <i data-lucide="map-pin" class="h-5 w-5 text-sageDeep"></i>
+              SEOUL
             </div>
-            
-            <button
-              class="grid h-10 w-10 place-items-center rounded-full border border-line bg-white text-sm font-bold text-sageDeep shadow-sm transition active:scale-95"
-              @click="openModal('font')"
-              aria-label="調整文字大小"
-            >
-              Aa
-            </button>
-          </div>
-        </div>
-      </header>
-
-      <section class="pb-28">
-        
-        <!-- ==================== 1. 今日 (Today) ==================== -->
-        <div v-if="currentTab === 'today'" class="tab-panel px-5 pt-6">
-          
-          <div class="mb-5 flex items-end justify-between">
-            <div>
-              <p class="text-xs font-bold tracking-[0.16em] text-sageDeep">TODAY's PLAN</p>
-              <h1 class="mt-1 font-sans text-3xl font-bold leading-tight text-ink">{{ formatDayDate(activeDay) }}</h1>
+            <div class="flex items-center gap-4">
+              <div class="flex items-center gap-1.5 font-bold text-ink">
+                <i data-lucide="cloud" class="h-[18px] w-[18px]"></i>
+                <span class="text-sm">天氣</span>
+              </div>
+              <button class="grid h-9 w-9 place-items-center rounded-full border border-line bg-white text-sm font-bold text-sageDeep shadow-sm transition active:scale-95" @click="openModal('font')" aria-label="調整文字大小">Aa</button>
             </div>
-            <button class="grid h-10 w-10 place-items-center rounded-full border border-line bg-white text-sageDeep shadow-sm transition active:scale-95" @click="openModal('trip')" aria-label="旅程設定">
-              <i data-lucide="settings-2" class="h-5 w-5"></i>
-            </button>
+          </div>
+        </header>
+
+        <div class="px-5 pt-6">
+          <div class="mb-5">
+            <h1 class="font-sans text-3xl font-bold text-ink leading-tight">{{ formatDayDate(activeDay) }}</h1>
+            <p class="mt-1 text-sm font-semibold text-ink/60">{{ activeDay.title || '今日行程' }}</p>
           </div>
 
-          <!-- 出遊安心卡 (緊急聯絡) -->
+          <!-- 出遊安心卡 -->
           <article class="mb-6 rounded-[24px] bg-white border border-line p-5 shadow-card">
             <h2 class="flex items-center gap-2 text-lg font-bold text-ink mb-4">
               <span class="grid h-8 w-8 place-items-center rounded-xl bg-mint text-sageDeep"><i data-lucide="shield-check" class="w-4.5 h-4.5"></i></span>
               出遊安心卡
             </h2>
-            
             <div class="space-y-3">
               <div class="rounded-[20px] bg-mint/40 p-4 border border-line">
                 <p class="text-xs font-bold tracking-wider text-sageDeep mb-2 uppercase">救助相關專線</p>
-                <ul class="space-y-2.5 text-sm text-ink font-semibold">
+                <ul class="space-y-2 text-sm text-ink font-semibold">
                   <li class="flex justify-between items-center">
                     <span>駐韓台北代表部</span>
                     <a href="tel:+821090802761" class="text-sageDeep underline decoration-sage/50 underline-offset-2">82-10-9080-2761</a>
@@ -218,22 +194,20 @@
                   </li>
                 </ul>
               </div>
-
               <div class="grid grid-cols-2 gap-3">
-                <div class="rounded-[20px] bg-[#eef5fa] p-3.5 border border-[#e1ebf4]">
-                  <p class="text-xs font-bold tracking-wider text-[#6b82a3] mb-2">當地緊急電話</p>
+                <div class="rounded-[20px] bg-fog p-3.5 border border-line">
+                  <p class="text-xs font-bold tracking-wider text-ink/50 mb-2">當地緊急電話</p>
                   <ul class="space-y-1.5 text-sm text-ink font-semibold">
-                    <li>報警：<a href="tel:112" class="underline decoration-[#cdd8e6] underline-offset-2">112</a></li>
-                    <li>網路犯罪：<a href="tel:118" class="underline decoration-[#cdd8e6] underline-offset-2">118</a></li>
-                    <li>火災急救：<a href="tel:119" class="underline decoration-[#cdd8e6] underline-offset-2">119</a></li>
+                    <li>報警：<a href="tel:112" class="underline decoration-line underline-offset-2">112</a></li>
+                    <li>網路犯罪：<a href="tel:118" class="underline decoration-line underline-offset-2">118</a></li>
+                    <li>火災急救：<a href="tel:119" class="underline decoration-line underline-offset-2">119</a></li>
                   </ul>
                 </div>
-
-                <div class="rounded-[20px] bg-[#fff5ec] p-3.5 border border-[#f7e6db]">
-                  <p class="text-xs font-bold tracking-wider text-[#ad7856] mb-2">緊急聯絡人</p>
+                <div class="rounded-[20px] bg-fog p-3.5 border border-line">
+                  <p class="text-xs font-bold tracking-wider text-ink/50 mb-2">緊急聯絡人</p>
                   <ul class="space-y-2 text-sm text-ink font-semibold">
-                    <li>張瓊淑<br><a href="tel:0930655555" class="text-[#ad7856] underline decoration-[#f1dfd4] underline-offset-2 text-xs">0930655555</a></li>
-                    <li class="pt-2 border-t border-[#f1dfd4]">潘林妹<br><a href="tel:0910286490" class="text-[#ad7856] underline decoration-[#f1dfd4] underline-offset-2 text-xs">0910286490</a></li>
+                    <li>張瓊淑<br><a href="tel:0930655555" class="text-sageDeep underline decoration-line underline-offset-2 text-xs">0930655555</a></li>
+                    <li class="pt-1.5 border-t border-line">潘林妹<br><a href="tel:0910286490" class="text-sageDeep underline decoration-line underline-offset-2 text-xs">0910286490</a></li>
                   </ul>
                 </div>
               </div>
@@ -252,12 +226,8 @@
               <p class="mt-3 text-sm font-bold text-ink">這一天還沒有行程</p>
             </div>
 
-            <article
-              v-for="item in activeDay.items"
-              :key="item.id"
-              class="timeline-line relative flex gap-3 pb-5"
-            >
-              <div class="relative z-10 grid h-9 w-9 shrink-0 place-items-center rounded-full border-4 border-fog bg-mint text-xs font-bold text-sageDeep">
+            <article v-for="item in activeDay.items" :key="item.id" class="timeline-line relative flex gap-3 pb-5">
+              <div class="relative z-10 grid h-9 w-9 shrink-0 place-items-center rounded-[14px] border-4 border-fog bg-mint text-xs font-bold text-sageDeep">
                 {{ scheduleCategoryIcon(item.category) }}
               </div>
               
@@ -285,29 +255,97 @@
         </div>
 
         <!-- ==================== 2. 行程 (Plan) ==================== -->
-        <div v-if="currentTab === 'plan'" class="tab-panel px-5 pt-6">
-          <div class="relative mb-5 flex items-start justify-between gap-4">
-            <div class="min-w-0 flex-1 pt-1">
-              <p class="text-xs font-bold tracking-[0.24em] text-sageDeep">ITINERARY</p>
-              <h1 class="mt-1 truncate font-sans text-3xl font-bold text-ink">{{ trip.title }}</h1>
+        <div v-if="currentTab === 'plan'" class="tab-panel pb-28">
+          <!-- 頂部卡片區域 -->
+          <header class="px-5 pt-5 pb-3 safe-top">
+            <div class="flex items-center justify-between">
+              <button @click="currentTab = 'today'" class="w-10 h-10 rounded-2xl bg-white shadow-card grid place-items-center shrink-0 transition active:scale-95">
+                <i data-lucide="arrow-left" class="w-5 h-5 text-ink"></i>
+              </button>
+              <div class="min-w-0 flex-1 ml-3">
+                <p class="text-[11px] font-bold tracking-[.18em] text-sageDeep uppercase">My Travel Journal</p>
+                <h1 class="mt-1 text-[23px] leading-tight font-bold tracking-[-.04em] truncate">{{ trip.title }}</h1>
+              </div>
+              <button @click="openModal('font')" class="ml-2 w-10 h-10 rounded-2xl bg-white shadow-card grid place-items-center text-sageDeep font-bold text-sm transition active:scale-95">Aa</button>
+              <button @click="openTripSettings" class="ml-2 w-10 h-10 rounded-2xl bg-white shadow-card grid place-items-center text-sageDeep transition active:scale-95">
+                <i data-lucide="settings-2" class="w-5 h-5"></i>
+              </button>
+            </div>
+
+            <div class="mt-4 rounded-[24px] bg-gradient-to-br from-[#dff3ec] via-[#edf8f4] to-[#e8f2fb] text-ink p-4 shadow-float border border-white overflow-hidden relative">
+              <div class="absolute -right-8 -top-10 w-32 h-32 rounded-full bg-white opacity-55"></div>
+              <div class="absolute right-12 bottom-[-42px] w-24 h-24 rounded-full bg-sun opacity-25"></div>
+              <div class="relative flex justify-between gap-4">
+                <div>
+                  <div class="flex items-center gap-1.5 text-ink/60 text-xs font-bold">
+                    <i data-lucide="map-pin" class="w-3.5 h-3.5"></i>
+                    <span>{{ trip.city.toUpperCase() }}</span>
+                  </div>
+                  <p class="mt-2 text-lg font-bold text-ink">{{ formatDateRange(trip.startDate, trip.endDate) }}</p>
+                  <p class="mt-1 text-xs text-ink/50 font-semibold">{{ tripDays.length }} 天 · {{ totalPlans }} 個行程</p>
+                </div>
+                <div class="text-right shrink-0">
+                  <p class="text-[10px] tracking-wider text-ink/50 font-bold">預覽天氣</p>
+                  <div class="mt-1 flex items-center justify-end gap-1.5 font-bold text-ink text-xl">
+                    <span>{{ weatherForSelected.icon }}</span>
+                    <span>天氣</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </header>
+
+          <!-- 水平日曆 (切齊左右邊界) -->
+          <div class="px-5 mt-2">
+            <div class="flex gap-2.5 overflow-x-auto hide-scrollbar pb-2">
+              <button
+                v-for="(day, index) in tripDays"
+                :key="day.isoDate"
+                class="flex-1 min-w-[62px] max-w-[76px] rounded-[20px] py-3 text-center transition-all border shadow-sm"
+                :class="selectedDay === index ? 'border-sageDeep bg-sageDeep text-white shadow-card' : 'border-line bg-white text-ink hover:bg-fog'"
+                @click="selectedDay = index"
+              >
+                <span class="block text-[10px] font-bold opacity-80">DAY {{ index + 1 }}</span>
+                <span class="mt-1 block text-xl font-bold leading-none">{{ day.day }}</span>
+                <span class="mt-1 block text-[10px] font-semibold opacity-70">{{ day.weekday }}</span>
+              </button>
             </div>
           </div>
 
-          <div class="hide-scrollbar -mx-5 mb-5 flex gap-2.5 overflow-x-auto px-5 pb-1">
-            <button
-              v-for="(day, index) in days"
-              :key="day.isoDate"
-              class="min-w-[84px] rounded-[22px] border px-3 py-3 text-center transition"
-              :class="selectedDay === index ? 'border-sageDeep bg-sageDeep text-white shadow-card' : 'border-line bg-white text-ink'"
-              @click="selectedDay = index"
-            >
-              <span class="block text-[10px] font-bold opacity-75">DAY {{ index + 1 }}</span>
-              <span class="mt-1 block text-2xl font-bold leading-none">{{ formatMonthDayShort(day.isoDate) }}</span>
+          <!-- 天氣卡片 -->
+          <div class="px-5 mt-3">
+            <div class="rounded-[24px] p-4 bg-gradient-to-br from-mint to-white border border-white shadow-card">
+              <div class="flex items-center justify-between gap-4">
+                <div class="flex items-center gap-3">
+                  <div class="w-12 h-12 rounded-2xl bg-white/85 grid place-items-center text-2xl shadow-sm">{{ weatherForSelected.icon }}</div>
+                  <div class="min-w-0">
+                    <p class="text-[10px] font-bold tracking-widest text-sageDeep uppercase">NAVER 行前天氣 · {{ shortDate(selectedDate) }}</p>
+                    <p class="mt-0.5 text-base font-bold text-ink">{{ weatherForSelected.label }}</p>
+                  </div>
+                </div>
+                <div class="text-right">
+                  <button class="mt-1 text-[10px] font-bold text-sageDeep flex items-center gap-1 hover:text-sage transition bg-white/50 px-2 py-1 rounded-lg">
+                    <i data-lucide="refresh-cw" class="w-3 h-3"></i>更新天氣
+                  </button>
+                </div>
+              </div>
+              <p class="mt-3 pt-3 border-t border-line text-[11px] leading-relaxed text-ink/60 font-semibold">{{ weatherOutfitTip }}</p>
+            </div>
+          </div>
+
+          <!-- 行程列表 -->
+          <div class="px-5 mt-6 flex items-center justify-between mb-4">
+            <div>
+              <p class="text-xs text-ink/50 font-bold uppercase">{{ selectedDayName }}</p>
+              <h2 class="text-xl font-bold tracking-tight text-ink mt-0.5">今天的行程</h2>
+            </div>
+            <button @click="openScheduleModal()" class="px-4 py-2 rounded-full bg-sageDeep text-white text-xs font-bold flex items-center gap-1.5 shadow-card transition active:scale-95">
+              <i data-lucide="plus" class="w-4 h-4"></i>新增
             </button>
           </div>
 
-          <div>
-            <div v-if="!activeDay.items.length" class="mb-4 rounded-[24px] border border-dashed border-sage bg-white/70 px-5 py-10 text-center">
+          <div class="px-5">
+            <div v-if="!activeDay.items.length" class="rounded-[24px] border border-dashed border-sage bg-white/70 px-5 py-10 text-center">
               <p class="text-sm font-bold text-ink">這一天還沒有行程</p>
             </div>
             
@@ -316,37 +354,47 @@
               :key="item.id"
               class="timeline-line relative flex gap-3 pb-4"
             >
-              <div class="relative z-10 grid h-9 w-9 shrink-0 place-items-center rounded-full border-4 border-fog bg-mint text-xs font-bold text-sageDeep">
+              <div class="relative z-10 grid h-9 w-9 shrink-0 place-items-center rounded-[14px] border-4 border-fog bg-mint text-xs font-bold text-sageDeep">
                 {{ scheduleCategoryIcon(item.category) }}
               </div>
-              <div class="paper-card relative min-w-0 flex-1 rounded-[22px] p-4 pr-[48px]">
-                <div class="flex items-center gap-2 mb-1">
+              <div class="paper-card relative min-w-0 flex-1 rounded-[22px] p-4 shadow-card">
+                <div class="flex items-center gap-2 mb-1.5">
                   <span class="text-sm font-bold text-sageDeep">{{ item.time }}</span>
-                  <span class="rounded-full bg-fog border border-line px-2 py-0.5 text-[10px] font-bold text-ink/70">{{ item.category }}</span>
+                  <span class="rounded-full bg-mint px-2 py-0.5 text-[10px] font-bold text-sageDeep">{{ item.category }}</span>
                 </div>
-                <h3 class="text-base font-bold text-ink truncate">{{ item.title }}</h3>
-                <p v-if="item.note" class="mt-1 truncate text-xs text-ink/60">{{ item.note }}</p>
                 
-                <button
-                  class="absolute right-3 top-1/2 -translate-y-1/2 grid h-10 w-10 place-items-center rounded-xl text-ink/40 hover:bg-fog hover:text-sageDeep transition"
-                  @click="openScheduleModal(item)"
-                >
-                  <i data-lucide="edit-2" class="w-4.5 h-4.5"></i>
-                </button>
+                <h3 class="text-base font-bold text-ink pr-10">{{ item.title }}</h3>
+                <p class="mt-1 text-xs text-ink/60 font-semibold flex items-center gap-1"><i data-lucide="map-pin" class="w-3.5 h-3.5"></i> {{ item.location || '尚未填寫地點' }}</p>
+                <p v-if="item.note" class="mt-2 text-xs leading-relaxed text-ink/70 whitespace-pre-line bg-fog p-2.5 rounded-xl border border-line">{{ item.note }}</p>
+                
+                <!-- 導航與預覽按鈕放在底部 -->
+                <div class="mt-3 pt-3 border-t border-line flex flex-wrap items-center gap-2">
+                  <button class="text-xs font-bold text-sageDeep bg-mint px-3 py-1.5 rounded-xl flex items-center gap-1.5 hover:bg-sageDeep hover:text-white transition" @click="navigateTo(item.title, item.transport)">
+                    <i data-lucide="navigation" class="w-3 h-3"></i> 導航 ({{ item.transport === '地鐵' ? '韓巢' : 'Naver' }})
+                  </button>
+                  <a v-if="item.url" :href="item.url" target="_blank" rel="noopener" class="text-xs font-bold text-ink/70 bg-fog border border-line px-3 py-1.5 rounded-xl flex items-center gap-1.5 hover:bg-white transition">
+                    <i data-lucide="link" class="w-3 h-3"></i> 網址預覽
+                  </a>
+                </div>
+                
+                <!-- 右側懸浮操作按鈕 -->
+                <div class="absolute right-3 top-3 flex items-center gap-1">
+                  <div class="flex flex-col gap-0.5">
+                    <button class="text-ink/20 hover:text-ink/60 disabled:opacity-0 transition" :disabled="itemIndex === 0" @click="moveSchedule(itemIndex, -1)"><i data-lucide="chevron-up" class="w-4.5 h-4.5"></i></button>
+                    <button class="text-ink/20 hover:text-ink/60 disabled:opacity-0 transition" :disabled="itemIndex === activeDay.items.length - 1" @click="moveSchedule(itemIndex, 1)"><i data-lucide="chevron-down" class="w-4.5 h-4.5"></i></button>
+                  </div>
+                  <button class="w-8 h-8 rounded-xl bg-fog text-ink/40 grid place-items-center hover:text-sageDeep transition" @click="openScheduleModal(item)">
+                    <i data-lucide="more-horizontal" class="w-4 h-4"></i>
+                  </button>
+                </div>
               </div>
             </article>
-
-            <button
-              class="mt-2 flex w-full items-center justify-center gap-2 rounded-[22px] border border-dashed border-sage bg-mint/50 py-4 text-sm font-bold text-sageDeep transition active:scale-[0.99]"
-              @click="openScheduleModal()"
-            >
-              <i data-lucide="plus" class="w-4 h-4"></i> 新增行程
-            </button>
+            <p class="mt-3 text-[10px] text-center text-ink/40 font-semibold mb-6">點擊導航按鈕，將自動開啟 Naver Maps 或韓巢地鐵 APP。</p>
           </div>
         </div>
 
         <!-- ==================== 3. 記帳 (Expense) ==================== -->
-        <div v-if="currentTab === 'expense'" class="tab-panel px-5 pt-6">
+        <div v-if="currentTab === 'expense'" class="tab-panel px-5 pt-6 pb-28">
           <div class="mb-5 flex items-end justify-between">
             <div>
               <p class="text-xs font-bold tracking-[0.15em] text-sageDeep uppercase">Trip Wallet</p>
@@ -357,9 +405,9 @@
 
           <div class="grid grid-cols-2 gap-3 mb-5">
             <article class="soft-card rounded-[22px] p-4 flex flex-col justify-center">
-              <p class="text-[10px] text-white/80 font-semibold tracking-wider">總支出 (TWD)</p>
+              <p class="text-[10px] text-white/80 font-bold tracking-wider">總支出 (TWD)</p>
               <p class="mt-1 text-2xl font-bold tracking-tight">NT$ {{ formatMoney(totalExpenses('TWD')) }}</p>
-              <p class="mt-2 text-[10px] text-white/70 font-semibold">共 {{ expenses.length }} 筆記錄</p>
+              <p class="mt-2 text-[10px] text-white/80 font-bold">共 {{ expenses.length }} 筆記錄</p>
             </article>
 
             <article class="paper-card rounded-[22px] p-4 flex flex-col justify-center">
@@ -400,7 +448,7 @@
         </div>
 
         <!-- ==================== 4. 韓語 (Language) ==================== -->
-        <div v-if="currentTab === 'thai'" class="tab-panel px-5 pt-6">
+        <div v-if="currentTab === 'thai'" class="tab-panel px-5 pt-6 pb-28">
           <div class="mb-5">
             <p class="text-xs font-bold tracking-[0.15em] text-sageDeep uppercase">Korean Class</p>
             <h1 class="mt-1 font-sans text-3xl font-bold text-ink">旅行韓語隨身學</h1>
@@ -558,16 +606,19 @@
               </label>
             </div>
             <label class="block">
+              <span class="mb-1.5 block text-xs font-bold text-ink/80">地點或完整地址 (提供精準導航)</span>
+              <input v-model.trim="scheduleForm.location" type="text" class="w-full rounded-2xl border border-line bg-white px-4 py-3 outline-none focus:border-sageDeep transition font-semibold text-sm" placeholder="例如：서울특별시 송파구 올림픽로 300" />
+            </label>
+            <label class="block">
               <span class="mb-1.5 block text-xs font-bold text-ink/80">網址 (選填，加入後可直接點擊)</span>
-              <input v-model.trim="scheduleForm.url" type="url" class="w-full rounded-2xl border border-line bg-white px-4 py-3 outline-none focus:border-sageDeep transition font-semibold text-xs" placeholder="https://..." />
+              <input v-model.trim="scheduleForm.url" type="url" class="w-full rounded-2xl border border-line bg-white px-4 py-3 outline-none focus:border-sageDeep transition font-semibold text-sm" placeholder="https://..." />
             </label>
             <label class="block">
               <span class="mb-1.5 block text-xs font-bold text-ink/80">備註 (選填)</span>
               <textarea v-model.trim="scheduleForm.note" rows="2" class="w-full rounded-2xl border border-line bg-white px-4 py-3 outline-none focus:border-sageDeep transition resize-none font-semibold text-sm" placeholder="營業時間、訂位資訊..."></textarea>
             </label>
-            <p class="text-[10px] font-semibold text-ink/50 leading-relaxed bg-white border border-line p-3 rounded-xl">行程導航預設開啟 Naver Maps，選擇地鐵將自動跳轉韓巢韓國地鐵。</p>
             <div class="flex gap-3 pt-1">
-              <button v-if="editingScheduleId" type="button" class="w-14 rounded-2xl border border-red-200 bg-red-50 text-red-500 font-bold" @click="deleteSchedule"><i data-lucide="trash-2" class="w-4.5 h-4.5 mx-auto"></i></button>
+              <button v-if="editingScheduleId" type="button" class="w-14 rounded-2xl border border-red-200 bg-red-50 text-red-500 font-bold hover:bg-red-100 transition" @click="deleteSchedule"><i data-lucide="trash-2" class="w-4.5 h-4.5 mx-auto"></i></button>
               <button type="submit" class="flex-1 rounded-2xl bg-sageDeep py-3.5 text-sm font-bold text-white shadow-card active:scale-[0.98] transition">儲存</button>
             </div>
           </form>
@@ -650,7 +701,7 @@
             </div>
 
             <div class="flex gap-3 pt-1">
-              <button v-if="editingExpenseId" type="button" class="w-14 rounded-2xl border border-red-200 bg-red-50 text-red-500 font-bold" @click="deleteExpense"><i data-lucide="trash-2" class="w-4.5 h-4.5 mx-auto"></i></button>
+              <button v-if="editingExpenseId" type="button" class="w-14 rounded-2xl border border-red-200 bg-red-50 text-red-500 font-bold hover:bg-red-100 transition" @click="deleteExpense"><i data-lucide="trash-2" class="w-4.5 h-4.5 mx-auto"></i></button>
               <button type="submit" class="flex-1 rounded-2xl bg-sageDeep py-3.5 text-sm font-bold text-white shadow-card active:scale-[0.98] transition">儲存支出</button>
             </div>
           </form>
@@ -690,17 +741,17 @@
             memberNames: ["我", "旅伴"]
           },
           plans: [
-            { id: uid(), date: '2026-08-13', time: '14:00', title: '台灣機場T2會合', category: '交通', place: '', note: '✈️ 去程航班 OZ714', transport: '飛行', url: '', order: 0 },
-            { id: uid(), date: '2026-08-13', time: '15:00', title: '入住 Daol Guesthouse', category: '住宿', place: '', note: '0813 @Daol Guesthouse 15:00 ➔ 11:00 (Agoda)', transport: '步行', url: '', order: 1 },
-            { id: uid(), date: '2026-08-13', time: '20:50', title: '搭車前往市區', category: '交通', place: '', note: '搭乘機場巴士或地鐵', transport: '地鐵', url: '', order: 2 },
-            { id: uid(), date: '2026-08-14', time: '10:00', title: '預約巨人展', category: '票券', place: '', note: '最早預約場次為 10:00。', transport: '步行', url: 'https://example.com', order: 0 }
+            { id: uid(), date: '2026-08-13', time: '14:00', title: '台灣機場T2會合', category: '交通', place: '', location: '桃園國際機場', note: '✈️ 去程航班 OZ714', transport: '飛行', url: '', order: 0 },
+            { id: uid(), date: '2026-08-13', time: '15:00', title: '入住 Daol Guesthouse', category: '住宿', place: '', location: '麻浦區弘大', note: '0813 @Daol Guesthouse 15:00 ➔ 11:00 (Agoda)', transport: '步行', url: '', order: 1 },
+            { id: uid(), date: '2026-08-13', time: '20:50', title: '搭車前往市區', category: '交通', place: '', location: '弘大站', note: '搭乘機場巴士或地鐵', transport: '地鐵', url: '', order: 2 },
+            { id: uid(), date: '2026-08-14', time: '10:00', title: '預約巨人展', category: '票券', place: '', location: '弘大周邊', note: '最早預約場次為 10:00。', transport: '步行', url: 'https://example.com', order: 0 }
           ],
           expenses: []
         };
 
         let loaded;
         try {
-          loaded = JSON.parse(localStorage.getItem("paikan-seoul-v5")) || defaultState;
+          loaded = JSON.parse(localStorage.getItem("paikan-seoul-v6")) || defaultState;
         } catch (e) {
           loaded = defaultState;
         }
@@ -785,7 +836,12 @@
             const iso = this.formatISO(c);
             res.push({
               isoDate: iso,
-              items: this.plans.filter(p => p.date === iso).sort((a,b) => a.time.localeCompare(b.time))
+              day: c.getDate(),
+              weekday: new Intl.DateTimeFormat('zh-TW', { weekday: 'short' }).format(c),
+              items: this.plans.filter(p => p.date === iso).sort((a,b) => {
+                if (a.order !== undefined && b.order !== undefined) return a.order - b.order;
+                return a.time.localeCompare(b.time);
+              })
             });
             c.setDate(c.getDate() + 1);
           }
@@ -794,6 +850,11 @@
         activeDay() {
           return this.days[this.selectedDay] || { isoDate: '', items: [] };
         },
+        selectedDayName() {
+          const index = this.days.findIndex(d => d.isoDate === this.activeDay.isoDate);
+          return index >= 0 ? `DAY ${index + 1} · ${this.shortDate(this.activeDay.isoDate)}` : '';
+        },
+        totalPlans() { return this.plans.length; },
         filteredKoreanPhrases() {
           if (this.koreanFilter === '全部') return this.koreanPhrases;
           return this.koreanPhrases.filter(p => p.category === this.koreanFilter);
@@ -859,6 +920,16 @@
             return `${debtors[0].name} 需轉給 ${creditors[0].name} ${this.formatMoney(debtors[0].amount)}`;
           }
           return debtors.map(d => `${d.name} 需付 ${this.formatMoney(d.amount)}`).join('\n');
+        },
+        weatherOutfitTip() {
+          const t = this.weatherForSelected.temp;
+          if(t.includes('--')) return '請留意天氣變化，備妥輕便雨具。';
+          const parts = t.split(/[-–]/);
+          const max = parseInt(parts[parts.length - 1]);
+          if(isNaN(max)) return '請留意當天天氣變化。';
+          if(max >= 28) return '建議穿著透氣輕便夏裝，注意防曬與水分。';
+          if(max >= 20) return '建議穿著薄長短袖搭配薄外套，洋蔥式穿搭。';
+          return '天氣涼，建議穿長袖與防風外套。';
         }
       },
       watch: {
@@ -871,11 +942,16 @@
       },
       mounted() {
         this.applyFontSize();
+        // Fake weather randomizer
+        const icons = ['☀️', '🌤️', '☁️', '🌦️'];
+        const labels = ['晴朗', '多雲時晴', '陰天', '短暫陣雨'];
+        const r = Math.floor(Math.random()*4);
+        this.weatherForSelected = { icon: icons[r], label: labels[r], temp: `${22+r}°–${28+r}°` };
         nextTick(() => window.lucide && window.lucide.createIcons());
       },
       methods: {
         saveData() {
-          localStorage.setItem("paikan-seoul-v5", JSON.stringify({
+          localStorage.setItem("paikan-seoul-v6", JSON.stringify({
             trip: this.trip,
             plans: this.plans,
             expenses: this.expenses
@@ -891,7 +967,7 @@
         setFontSize(s) {
           this.fontSize = s;
           this.closeModal();
-          this.saveData(); // Save font preference optionally if needed
+          this.saveData();
         },
         applyFontSize() {
           document.documentElement.dataset.fontSize = this.fontSize;
@@ -911,6 +987,11 @@
           const d1 = new Date(s);
           const d2 = new Date(e);
           return `${d1.getFullYear()} · ${d1.getMonth()+1}/${d1.getDate()} — ${d2.getMonth()+1}/${d2.getDate()}`;
+        },
+        shortDate(iso) {
+          if(!iso) return '';
+          const d = new Date(iso);
+          return `${d.getMonth()+1}/${d.getDate()}`;
         },
         formatMoney(val) {
           return Math.round(Number(val||0)).toLocaleString('zh-TW');
@@ -936,7 +1017,24 @@
           u.lang = 'ko-KR'; u.rate = 0.85;
           window.speechSynthesis.speak(u);
         },
-        toggleSchedule(item) { item.done = !item.done; },
+        
+        moveSchedule(index, direction) {
+          const targetIndex = index + direction;
+          if (targetIndex < 0 || targetIndex >= this.activeDay.items.length) return;
+          
+          const items = this.activeDay.items;
+          const currentItem = items[index];
+          const targetItem = items[targetIndex];
+          
+          const currentOrder = currentItem.order !== undefined ? currentItem.order : index;
+          const targetOrder = targetItem.order !== undefined ? targetItem.order : targetIndex;
+          
+          currentItem.order = targetOrder;
+          targetItem.order = currentOrder;
+          
+          // Re-sort triggers automatically via computed property
+          this.saveData();
+        },
 
         // 行程表單
         openScheduleModal(item=null) {
@@ -945,7 +1043,7 @@
             this.scheduleForm = JSON.parse(JSON.stringify(item));
           } else {
             this.editingScheduleId = null;
-            this.scheduleForm = { date: this.activeDay.isoDate || this.trip.startDate, time: '10:00', title:'', category:'景點', transport:'地鐵', url:'', note:'' };
+            this.scheduleForm = { date: this.activeDay.isoDate || this.trip.startDate, time: '10:00', title:'', category:'景點', transport:'地鐵', url:'', note:'', location:'' };
           }
           this.openModal('schedule');
         },
@@ -954,7 +1052,7 @@
             const idx = this.plans.findIndex(p=>p.id===this.editingScheduleId);
             if(idx>=0) this.plans[idx] = {...this.scheduleForm};
           } else {
-            this.plans.push({...this.scheduleForm, id: this.uid()});
+            this.plans.push({...this.scheduleForm, id: this.uid(), order: this.activeDay.items.length});
           }
           this.closeModal();
           this.showToast('行程已儲存');
@@ -1010,7 +1108,7 @@
         },
         saveTrip() {
           const names = this.tripForm.memberNamesText.split(/[,，、]/).map(n=>n.trim()).filter(Boolean);
-          this.trip.title = this.tripForm.title; // map property correctly
+          this.trip.title = this.tripForm.title;
           this.trip.city = this.tripForm.city;
           this.trip.startDate = this.tripForm.startDate;
           this.trip.endDate = this.tripForm.endDate;
