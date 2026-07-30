@@ -6,10 +6,10 @@
   <meta name="theme-color" content="#fbfcf9" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-  <meta name="apple-mobile-web-app-title" content="PAIKAN" />
-  <title>首爾散步計畫｜PAIKAN</title>
+  <meta name="apple-mobile-web-app-title" content="HAMKKE" />
+  <title>首爾散步計畫｜HAMKKE</title>
   
-  <!-- 修正為 Tailwind v4 確保樣式與色彩正常運作不白畫面 -->
+  <!-- 修正為 Tailwind v4，確保樣式與色彩正常運作不白畫面 -->
   <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
   <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
   <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.js"></script>
@@ -221,20 +221,20 @@
             </div>
 
             <article v-for="item in activeDay.items" :key="item.id" class="timeline-line relative flex gap-3 pb-5">
-              <div class="relative z-10 grid h-9 w-9 shrink-0 place-items-center rounded-[14px] border-4 border-fog bg-mint text-xs font-bold text-sageDeep">
+              <div class="relative z-10 grid h-9 w-9 shrink-0 place-items-center rounded-full border-4 border-fog bg-mint text-xs font-bold text-sageDeep">
                 {{ scheduleCategoryIcon(item.category) }}
               </div>
               
-              <div class="paper-card relative min-w-0 flex-1 rounded-[22px] p-4 shadow-sm">
+              <div class="paper-card relative min-w-0 flex-1 rounded-[22px] p-4">
                 <div class="flex items-center gap-2 mb-1.5">
                   <span class="text-sm font-bold text-sageDeep">{{ item.time }}</span>
                   <span class="rounded-full bg-fog border border-line px-2 py-0.5 text-[10px] font-bold text-ink/70">{{ item.transport }}</span>
                 </div>
                 
-                <a v-if="item.url" :href="item.url" target="_blank" rel="noopener" class="text-base font-bold text-ink underline decoration-sage underline-offset-2 hover:text-sageDeep transition block truncate">
+                <a v-if="item.url" :href="item.url" target="_blank" rel="noopener" class="text-base font-bold text-ink underline decoration-sage underline-offset-2 hover:text-sageDeep transition block truncate pr-2">
                   {{ item.title }} <i data-lucide="external-link" class="w-3.5 h-3.5 inline-block mb-0.5 text-sageDeep"></i>
                 </a>
-                <h3 v-else class="text-base font-bold text-ink">{{ item.title }}</h3>
+                <h3 v-else class="text-base font-bold text-ink pr-2">{{ item.title }}</h3>
                 
                 <p v-if="item.note" class="mt-2 text-xs leading-relaxed text-ink/70 whitespace-pre-line bg-fog p-2.5 rounded-xl border border-line">{{ item.note }}</p>
                 
@@ -284,9 +284,9 @@
             </div>
           </header>
 
-          <!-- 日期選擇 (切齊左右邊界) -->
+          <!-- 日期選擇 (切齊邊界) -->
           <div class="px-5 mt-2">
-            <div class="flex gap-[11px] overflow-x-auto hide-scrollbar py-1">
+            <div class="flex gap-2.5 overflow-x-auto hide-scrollbar py-1">
               <button
                 v-for="(day, i) in tripDays"
                 :key="day.isoDate"
@@ -353,7 +353,7 @@
                   <span class="bg-mint text-sageDeep px-2 py-0.5 rounded-full text-[10px] font-bold">{{ item.category }}</span>
                 </div>
                 
-                <h3 class="font-bold text-ink text-lg pr-8 truncate">{{ item.title }}</h3>
+                <h3 class="font-bold text-ink text-lg pr-12 truncate">{{ item.title }}</h3>
                 <p class="text-xs text-ink/50 font-semibold flex items-center gap-1 mt-1.5 truncate"><i data-lucide="map-pin" class="w-3.5 h-3.5"></i> {{ item.location || '尚未填寫地點' }}</p>
                 
                 <div class="absolute right-3 top-3 flex flex-col items-center gap-1.5">
@@ -529,7 +529,7 @@
               <span class="mb-1.5 block text-xs font-bold text-ink/80">行程名稱</span>
               <input v-model.trim="tripForm.title" required class="w-full rounded-2xl border border-line bg-white px-4 py-3 outline-none focus:border-sageDeep transition font-semibold" placeholder="例如：首爾放鬆之旅" />
             </label>
-            <div class="form-grid-two">
+            <div class="grid grid-cols-2 gap-3">
               <label class="block">
                 <span class="mb-1.5 block text-xs font-bold text-ink/80">出發日期</span>
                 <input v-model="tripForm.startDate" required type="date" class="w-full rounded-2xl border border-line bg-white px-3 py-3 outline-none focus:border-sageDeep transition font-semibold text-sm" />
@@ -936,6 +936,11 @@
       },
       mounted() {
         this.applyFontSize();
+        // Fake weather randomizer
+        const icons = ['☀️', '🌤️', '☁️', '🌦️'];
+        const labels = ['晴朗', '多雲時晴', '陰天', '短暫陣雨'];
+        const r = Math.floor(Math.random()*4);
+        this.weatherForSelected = { icon: icons[r], label: labels[r], temp: `${22+r}°–${28+r}°` };
         nextTick(() => window.lucide && window.lucide.createIcons());
       },
       methods: {
