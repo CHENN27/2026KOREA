@@ -9,7 +9,7 @@
   <meta name="apple-mobile-web-app-title" content="PAIKAN" />
   <title>首爾散步計畫｜PAIKAN</title>
   
-  <!-- 使用最新的 Tailwind v4 確保配色正常顯示 -->
+  <!-- 修正為 Tailwind v4 確保樣式與色彩正常運作不白畫面 -->
   <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
   <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
   <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.js"></script>
@@ -149,7 +149,7 @@
               {{ trip.city.toUpperCase() }}
             </div>
             <div class="flex items-center gap-4">
-              <div class="flex items-center gap-1.5 font-bold text-ink">
+              <div class="flex items-center gap-1.5 font-bold text-ink/70">
                 <i data-lucide="cloud" class="h-[18px] w-[18px]"></i>
                 <span class="text-sm">天氣</span>
               </div>
@@ -221,20 +221,20 @@
             </div>
 
             <article v-for="item in activeDay.items" :key="item.id" class="timeline-line relative flex gap-3 pb-5">
-              <div class="relative z-10 grid h-9 w-9 shrink-0 place-items-center rounded-full border-4 border-fog bg-mint text-xs font-bold text-sageDeep">
+              <div class="relative z-10 grid h-9 w-9 shrink-0 place-items-center rounded-[14px] border-4 border-fog bg-mint text-xs font-bold text-sageDeep">
                 {{ scheduleCategoryIcon(item.category) }}
               </div>
               
-              <div class="paper-card relative min-w-0 flex-1 rounded-[22px] p-4">
+              <div class="paper-card relative min-w-0 flex-1 rounded-[22px] p-4 shadow-sm">
                 <div class="flex items-center gap-2 mb-1.5">
                   <span class="text-sm font-bold text-sageDeep">{{ item.time }}</span>
                   <span class="rounded-full bg-fog border border-line px-2 py-0.5 text-[10px] font-bold text-ink/70">{{ item.transport }}</span>
                 </div>
                 
-                <a v-if="item.url" :href="item.url" target="_blank" rel="noopener" class="text-base font-bold text-ink underline decoration-sage underline-offset-2 hover:text-sageDeep transition block truncate pr-2">
+                <a v-if="item.url" :href="item.url" target="_blank" rel="noopener" class="text-base font-bold text-ink underline decoration-sage underline-offset-2 hover:text-sageDeep transition block truncate">
                   {{ item.title }} <i data-lucide="external-link" class="w-3.5 h-3.5 inline-block mb-0.5 text-sageDeep"></i>
                 </a>
-                <h3 v-else class="text-base font-bold text-ink pr-2">{{ item.title }}</h3>
+                <h3 v-else class="text-base font-bold text-ink">{{ item.title }}</h3>
                 
                 <p v-if="item.note" class="mt-2 text-xs leading-relaxed text-ink/70 whitespace-pre-line bg-fog p-2.5 rounded-xl border border-line">{{ item.note }}</p>
                 
@@ -250,7 +250,7 @@
 
         <!-- ==================== 2. 行程 (Plan) ==================== -->
         <div v-if="currentTab === 'plan'" class="tab-panel pb-28">
-          <!-- 頂部卡片區域 (完全對齊截圖) -->
+          <!-- 頂部卡片區域 -->
           <header class="px-5 pt-5 pb-3 safe-top bg-fog">
             <div class="flex items-center justify-between gap-3">
               <button @click="currentTab = 'today'" class="w-10 h-10 rounded-full bg-white border border-line shadow-sm grid place-items-center shrink-0 transition active:scale-95">
@@ -270,15 +270,15 @@
             <div class="mt-5 rounded-[24px] bg-gradient-to-br from-mint via-white to-[#e8f2fb] p-5 relative overflow-hidden shadow-sm border border-white">
               <div class="absolute -right-6 -bottom-6 w-32 h-32 rounded-full bg-sun opacity-30"></div>
               <div class="relative z-10 flex justify-between">
-                <div class="text-xs text-ink/50 font-semibold flex items-center gap-1"><i data-lucide="map-pin" class="w-3.5 h-3.5"></i> {{ trip.city }}</div>
-                <div class="text-xs text-ink/50 font-semibold">預算使用</div>
+                <div class="text-xs text-ink/50 font-bold flex items-center gap-1"><i data-lucide="map-pin" class="w-3.5 h-3.5"></i> {{ trip.city }}</div>
+                <div class="text-xs text-ink/50 font-bold">預算使用</div>
               </div>
               <div class="relative z-10 mt-2 flex justify-between items-end">
                 <div class="text-2xl font-bold text-ink tracking-tight">{{ tripHeroRange }}</div>
                 <div class="text-xl font-bold text-ink">NT${{ formatMoney(totalExpenses('TWD')) }}</div>
               </div>
               <div class="relative z-10 mt-3 flex justify-between items-center">
-                <div class="text-xs text-ink/50 font-semibold">{{ tripDays.length }} 天 · {{ totalPlans }} 個行程</div>
+                <div class="text-xs text-ink/50 font-bold">{{ tripDays.length }} 天 · {{ totalPlans }} 個行程</div>
                 <div class="w-20 h-1.5 rounded-full bg-line overflow-hidden"><div class="h-full bg-sageDeep transition-all" :style="{width: budgetPercent + '%'}"></div></div>
               </div>
             </div>
@@ -286,7 +286,7 @@
 
           <!-- 日期選擇 (切齊左右邊界) -->
           <div class="px-5 mt-2">
-            <div class="flex gap-2.5 overflow-x-auto hide-scrollbar py-1">
+            <div class="flex gap-[11px] overflow-x-auto hide-scrollbar py-1">
               <button
                 v-for="(day, i) in tripDays"
                 :key="day.isoDate"
@@ -303,7 +303,7 @@
 
           <!-- 天氣卡片 -->
           <div class="px-5 mt-4">
-            <div class="bg-white rounded-3xl p-4 shadow-sm border border-line flex items-center justify-between">
+            <div class="bg-white rounded-[24px] p-4 shadow-sm border border-line flex items-center justify-between">
               <div class="flex items-center gap-3">
                 <div class="text-3xl drop-shadow-sm">{{ weatherForSelected.icon }}</div>
                 <div>
@@ -353,7 +353,7 @@
                   <span class="bg-mint text-sageDeep px-2 py-0.5 rounded-full text-[10px] font-bold">{{ item.category }}</span>
                 </div>
                 
-                <h3 class="font-bold text-ink text-lg pr-12 truncate">{{ item.title }}</h3>
+                <h3 class="font-bold text-ink text-lg pr-8 truncate">{{ item.title }}</h3>
                 <p class="text-xs text-ink/50 font-semibold flex items-center gap-1 mt-1.5 truncate"><i data-lucide="map-pin" class="w-3.5 h-3.5"></i> {{ item.location || '尚未填寫地點' }}</p>
                 
                 <div class="absolute right-3 top-3 flex flex-col items-center gap-1.5">
@@ -368,7 +368,7 @@
               </div>
             </article>
             
-            <p class="mt-4 text-[10px] text-center text-ink/40 font-semibold mb-6">頁面顯示的是依距離與交通方式推算的時間；點選交通卡片可在 Maps 查看即時導航時間。</p>
+            <p class="mt-4 text-[10px] text-center text-ink/40 font-semibold mb-6">點選卡片內的交通按鈕即可在 Google/Naver Maps 查看即時導航時間。</p>
           </div>
         </div>
 
@@ -529,7 +529,7 @@
               <span class="mb-1.5 block text-xs font-bold text-ink/80">行程名稱</span>
               <input v-model.trim="tripForm.title" required class="w-full rounded-2xl border border-line bg-white px-4 py-3 outline-none focus:border-sageDeep transition font-semibold" placeholder="例如：首爾放鬆之旅" />
             </label>
-            <div class="grid grid-cols-2 gap-3">
+            <div class="form-grid-two">
               <label class="block">
                 <span class="mb-1.5 block text-xs font-bold text-ink/80">出發日期</span>
                 <input v-model="tripForm.startDate" required type="date" class="w-full rounded-2xl border border-line bg-white px-3 py-3 outline-none focus:border-sageDeep transition font-semibold text-sm" />
@@ -728,7 +728,7 @@
 
         let loaded;
         try {
-          loaded = JSON.parse(localStorage.getItem("paikan-seoul-v8"));
+          loaded = JSON.parse(localStorage.getItem("paikan-seoul-v9"));
           if (!loaded) throw new Error("Empty storage");
           if (!loaded.trip) loaded.trip = defaultState.trip;
           if (!loaded.plans) loaded.plans = [];
@@ -921,6 +921,9 @@
           if(max >= 28) return '建議穿著透氣輕便夏裝，注意防曬與水分。';
           if(max >= 20) return '建議穿著薄長短袖搭配薄外套，洋蔥式穿搭。';
           return '天氣涼，建議穿長袖與防風外套。';
+        },
+        budgetPercent() {
+          return Math.min(100, this.trip.budget ? (this.totalExpenses('TWD') / this.trip.budget) * 100 : 0);
         }
       },
       watch: {
@@ -937,7 +940,7 @@
       },
       methods: {
         saveData() {
-          localStorage.setItem("paikan-seoul-v8", JSON.stringify({
+          localStorage.setItem("paikan-seoul-v9", JSON.stringify({
             trip: this.trip,
             plans: this.plans,
             expenses: this.expenses
