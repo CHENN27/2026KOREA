@@ -21,7 +21,6 @@
       --color-sageDeep: #69a494;
       --color-mint: #e7f5ef;
       --color-sun: #f8d98c;
-      --color-peach: #e4def1;
       --color-line: #eaf0ec;
     }
   </style>
@@ -30,30 +29,21 @@
     :root {
       --ink: #40514d;
       --fog: #fbfcf9;
-      --line: #eaf0ec;
       --sage: #a9d4c6;
       --sageDeep: #69a494;
+      --mint: #e7f5ef;
+      --line: #eaf0ec;
     }
 
-    * {
-      box-sizing: border-box;
-      -webkit-tap-highlight-color: transparent;
-    }
-
-    html {
-      background: #f2f7f4;
-    }
-
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    html { background: #f2f7f4; }
     body {
-      margin: 0;
-      min-height: 100vh;
-      color: var(--ink);
+      margin: 0; min-height: 100vh; color: var(--ink);
       background:
         radial-gradient(circle at 12% 4%, rgba(219, 244, 235, .95), transparent 32%),
         radial-gradient(circle at 90% 10%, rgba(225, 240, 253, .86), transparent 30%),
-        radial-gradient(circle at 92% 86%, rgba(248, 217, 140, .18), transparent 28%),
         #f2f7f4;
-      font-family: "DM Sans", "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", system-ui, sans-serif;
+      font-family: "DM Sans", "Noto Sans TC", "PingFang TC", system-ui, sans-serif;
     }
 
     [v-cloak] { display: none !important; }
@@ -61,19 +51,9 @@
     button { cursor: pointer; }
 
     .app-shell {
-      width: min(100%, 560px);
-      min-height: 100vh;
-      margin: 0 auto;
-      background: var(--fog);
-      position: relative;
-      overflow-x: hidden;
+      width: min(100%, 560px); min-height: 100vh; margin: 0 auto;
+      background: var(--fog); position: relative; overflow-x: hidden;
       box-shadow: 0 0 50px rgba(74, 107, 98, 0.09);
-    }
-
-    .paper-card {
-      background: rgba(255, 255, 255, 0.98);
-      border: 1px solid var(--line);
-      box-shadow: 0 12px 30px rgba(74, 107, 98, 0.07);
     }
 
     /* 字體大小設定 (Aa功能) */
@@ -83,25 +63,6 @@
     .font-xlarge .text-sm { font-size: 1.125rem !important; line-height: 1.7rem !important; }
     .font-large .text-base { font-size: 1.125rem !important; line-height: 1.7rem !important; }
     .font-xlarge .text-base { font-size: 1.25rem !important; line-height: 1.85rem !important; }
-    .font-large .text-xl { font-size: 1.375rem !important; }
-    .font-xlarge .text-xl { font-size: 1.5rem !important; }
-    .font-large .text-2xl { font-size: 1.625rem !important; }
-    .font-xlarge .text-2xl { font-size: 1.8rem !important; }
-    .font-large .text-3xl { font-size: 2rem !important; }
-    .font-xlarge .text-3xl { font-size: 2.15rem !important; }
-
-    @media (max-width: 480px) {
-      .font-standard .text-xs { font-size: 0.8125rem !important; line-height: 1.25rem !important; }
-      .font-standard .text-sm { font-size: 0.9375rem !important; line-height: 1.4rem !important; }
-      .font-standard .text-base { font-size: 1rem !important; line-height: 1.5rem !important; }
-      .font-standard .text-xl { font-size: 1.25rem !important; line-height: 1.7rem !important; }
-      .font-standard .text-2xl { font-size: 1.5rem !important; line-height: 1.9rem !important; }
-      .font-standard .text-3xl { font-size: 1.75rem !important; line-height: 2.15rem !important; }
-      
-      .modal-backdrop { padding: 0.5rem !important; }
-      .modal-sheet { width: 100% !important; max-width: calc(100vw - 1rem) !important; padding: 1rem !important; border-radius: 24px !important; }
-      .modal-sheet input, .modal-sheet select, .modal-sheet textarea { width: 100%; min-height: 48px; padding: 0.75rem 0.875rem; border-radius: 16px; }
-    }
 
     .safe-top { padding-top: max(14px, env(safe-area-inset-top)); }
     .safe-bottom { padding-bottom: max(90px, env(safe-area-inset-bottom)); }
@@ -112,17 +73,6 @@
     @keyframes panel-in { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
     @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
     @keyframes sheet-up { from { transform: translateY(22px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-    
-    .timeline-line::before {
-      content: "";
-      position: absolute;
-      left: 18px;
-      top: 36px;
-      bottom: -18px;
-      width: 1.5px;
-      background: var(--line);
-    }
-    .timeline-line:last-child::before { display: none; }
 
     .modal-backdrop { animation: fade-in 0.2s ease both; }
     .modal-sheet { animation: sheet-up 0.28s cubic-bezier(0.2, 0.8, 0.2, 1) both; overflow-x: hidden; }
@@ -133,12 +83,6 @@
       12%, 82% { transform: translate(-50%, 0); opacity: 1; }
       100% { transform: translate(-50%, -8px); opacity: 0; }
     }
-
-    @media (min-width: 700px) {
-      body { padding: 22px 0; }
-      .app-shell { min-height: calc(100vh - 44px); border-radius: 34px; border: 1px solid rgba(255, 255, 255, 0.8); }
-      .bottom-nav { width: 558px; left: 50% !important; transform: translateX(-50%); border-radius: 0 0 34px 34px; border-left: 1px solid var(--line); border-right: 1px solid var(--line); }
-    }
   </style>
 </head>
 <body>
@@ -147,17 +91,17 @@
       
       <!-- ==================== 1. 今日 (Today) ==================== -->
       <div v-if="currentTab === 'today'" class="tab-panel pb-28">
-        <!-- 今日頂部極簡標題列 -->
+        <!-- 今日極簡標題列 -->
         <header class="safe-top sticky top-0 z-30 bg-fog/95 px-5 pb-3 pt-5 backdrop-blur-xl border-b border-line">
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-1.5 font-bold text-ink text-lg tracking-wider">
               <i data-lucide="map-pin" class="h-5 w-5 text-sageDeep"></i>
-              SEOUL
+              {{ trip.city.toUpperCase() }}
             </div>
             <div class="flex items-center gap-4">
-              <div class="flex items-center gap-1.5 font-bold text-ink">
+              <div class="flex items-center gap-1.5 font-bold text-ink/70">
                 <i data-lucide="cloud" class="h-[18px] w-[18px]"></i>
-                <span class="text-sm">預覽天氣</span>
+                <span class="text-sm">天氣</span>
               </div>
               <button class="grid h-9 w-9 place-items-center rounded-full border border-line bg-white text-sm font-bold text-sageDeep shadow-sm transition active:scale-95" @click="openModal('font')" aria-label="調整文字大小">Aa</button>
             </div>
@@ -171,7 +115,7 @@
           </div>
 
           <!-- 出遊安心卡 -->
-          <article class="mb-6 rounded-[24px] bg-white border border-line p-5 shadow-card">
+          <article class="mb-8 rounded-[24px] bg-white border border-line p-5 shadow-sm">
             <h2 class="flex items-center gap-2 text-lg font-bold text-ink mb-4">
               <span class="grid h-8 w-8 place-items-center rounded-xl bg-mint text-sageDeep"><i data-lucide="shield-check" class="w-4.5 h-4.5"></i></span>
               出遊安心卡
@@ -214,10 +158,10 @@
             </div>
           </article>
 
-          <!-- 今天的安排 (時間軸) -->
+          <!-- 今天的安排 -->
           <section>
             <div class="mb-4 flex items-center justify-between">
-              <h2 class="font-sans text-xl font-bold text-ink">今天的安排</h2>
+              <h2 class="font-sans text-xl font-bold text-ink">今天的行程</h2>
               <button class="text-xs font-bold text-sageDeep flex items-center gap-1 bg-mint px-3 py-1.5 rounded-full" @click="currentTab = 'plan'">管理行程 <i data-lucide="chevron-right" class="w-3 h-3"></i></button>
             </div>
 
@@ -226,168 +170,159 @@
               <p class="mt-3 text-sm font-bold text-ink">這一天還沒有行程</p>
             </div>
 
-            <article v-for="item in activeDay.items" :key="item.id" class="timeline-line relative flex gap-3 pb-5">
-              <div class="relative z-10 grid h-9 w-9 shrink-0 place-items-center rounded-[14px] border-4 border-fog bg-mint text-xs font-bold text-sageDeep">
-                {{ scheduleCategoryIcon(item.category) }}
-              </div>
-              
-              <div class="paper-card relative min-w-0 flex-1 rounded-[22px] p-4">
-                <div class="flex items-center gap-2 mb-1.5">
-                  <span class="text-sm font-bold text-sageDeep">{{ item.time }}</span>
-                  <span class="rounded-full bg-fog border border-line px-2 py-0.5 text-[10px] font-bold text-ink/70">{{ item.transport }}</span>
+            <div class="space-y-4">
+              <article v-for="item in activeDay.items" :key="item.id" class="flex gap-3">
+                <div class="w-10 h-10 rounded-full bg-[#fcf8e3] border border-white shadow-sm flex items-center justify-center shrink-0 text-lg z-10 relative">
+                  {{ transportIcon(item.transport) }}
                 </div>
                 
-                <h3 class="text-base font-bold text-ink">{{ item.title }}</h3>
-                <p v-if="item.url" class="mt-1">
-                  <a :href="item.url" target="_blank" rel="noopener" class="text-xs font-bold text-sageDeep underline decoration-sage/50 underline-offset-2 flex items-center gap-1"><i data-lucide="link" class="w-3 h-3"></i> {{ item.location || '前往網頁' }}</a>
-                </p>
-                <p v-else-if="item.location" class="mt-1 text-xs font-bold text-ink/60 flex items-center gap-1"><i data-lucide="map-pin" class="w-3 h-3"></i> {{ item.location }}</p>
-                
-                <p v-if="item.note" class="mt-2 text-xs leading-relaxed text-ink/70 whitespace-pre-line bg-fog p-2.5 rounded-xl border border-line">{{ item.note }}</p>
-                
-                <div class="mt-3 pt-3 border-t border-line flex items-center justify-end">
-                  <button class="text-xs font-bold text-sageDeep bg-mint px-3 py-1.5 rounded-xl flex items-center gap-1.5 hover:bg-sageDeep hover:text-white transition" @click="navigateTo(item.title, item.transport)">
-                    <i data-lucide="navigation" class="w-3 h-3"></i> 導航 ({{ item.transport === '地鐵' ? '韓巢' : 'Naver' }})
-                  </button>
+                <div class="flex-1 bg-white rounded-3xl p-4 shadow-sm border border-line relative">
+                  <div class="flex items-center gap-2 mb-2">
+                    <span class="font-bold text-sageDeep text-sm">{{ item.time }}</span>
+                    <span class="bg-mint text-sageDeep px-2 py-0.5 rounded-full text-[10px] font-bold">{{ item.category }}</span>
+                  </div>
+                  
+                  <a v-if="item.url" :href="item.url" target="_blank" rel="noopener" class="text-lg font-bold text-ink underline decoration-sage underline-offset-2 hover:text-sageDeep transition block truncate pr-8">
+                    {{ item.title }} <i data-lucide="external-link" class="w-3.5 h-3.5 inline-block mb-0.5 text-sageDeep"></i>
+                  </a>
+                  <h3 v-else class="text-lg font-bold text-ink pr-8">{{ item.title }}</h3>
+                  
+                  <p class="text-xs text-ink/50 font-semibold flex items-center gap-1 mt-1.5"><i data-lucide="map-pin" class="w-3.5 h-3.5"></i> {{ item.location || '尚未填寫地點' }}</p>
+                  
+                  <p v-if="item.note" class="mt-2.5 text-xs leading-relaxed text-ink/70 whitespace-pre-line bg-fog p-2.5 rounded-xl border border-line">{{ item.note }}</p>
+                  
+                  <div class="mt-3 pt-3 border-t border-line flex items-center justify-end">
+                    <button class="text-xs font-bold text-sageDeep bg-mint px-3 py-1.5 rounded-xl flex items-center gap-1.5 hover:bg-sageDeep hover:text-white transition" @click="navigateTo(item.title, item.transport)">
+                      <i data-lucide="navigation" class="w-3 h-3"></i> 導航 ({{ item.transport === '地鐵' ? '韓巢' : 'Naver' }})
+                    </button>
+                  </div>
                 </div>
-              </div>
-            </article>
+              </article>
+            </div>
           </section>
         </div>
 
         <!-- ==================== 2. 行程 (Plan) ==================== -->
         <div v-if="currentTab === 'plan'" class="tab-panel pb-28">
-          <!-- 頂部卡片區域 -->
-          <header class="px-5 pt-5 pb-3 safe-top">
-            <div class="flex items-center justify-between">
-              <button @click="currentTab = 'today'" class="w-10 h-10 rounded-2xl bg-white shadow-card grid place-items-center shrink-0 transition active:scale-95">
+          <!-- 頂部卡片區域 (完全還原截圖) -->
+          <header class="px-5 pt-5 pb-3 safe-top bg-fog">
+            <div class="flex items-center justify-between gap-3">
+              <button @click="currentTab = 'today'" class="w-10 h-10 rounded-full bg-white border border-line shadow-sm grid place-items-center shrink-0 transition active:scale-95">
                 <i data-lucide="arrow-left" class="w-5 h-5 text-ink"></i>
               </button>
-              <div class="min-w-0 flex-1 ml-3">
-                <p class="text-[11px] font-bold tracking-[.18em] text-sageDeep uppercase">My Travel Journal</p>
-                <h1 class="mt-1 text-[23px] leading-tight font-bold tracking-[-.04em] truncate">{{ trip.title }}</h1>
+              <div class="flex-1 min-w-0">
+                <p class="text-[10px] font-bold tracking-[0.15em] text-sageDeep uppercase">My Travel Journal</p>
+                <h1 class="text-lg font-bold text-ink truncate">{{ trip.title }}</h1>
               </div>
-              <button @click="openModal('font')" class="ml-2 w-10 h-10 rounded-2xl bg-white shadow-card grid place-items-center text-sageDeep font-bold text-sm transition active:scale-95">Aa</button>
-              <button @click="openTripSettings" class="ml-2 w-10 h-10 rounded-2xl bg-white shadow-card grid place-items-center text-sageDeep transition active:scale-95">
+              <button @click="openModal('font')" class="w-10 h-10 rounded-full bg-[#f4eff8] text-[#9b82c3] font-bold text-sm grid place-items-center shrink-0 transition active:scale-95">Aa</button>
+              <button @click="openTripSettings" class="w-10 h-10 rounded-full bg-mint text-sageDeep grid place-items-center shrink-0 transition active:scale-95">
                 <i data-lucide="settings-2" class="w-5 h-5"></i>
               </button>
             </div>
 
-            <div class="mt-4 rounded-[24px] bg-gradient-to-br from-[#dff3ec] via-[#edf8f4] to-[#e8f2fb] text-ink p-4 shadow-float border border-white overflow-hidden relative">
-              <div class="absolute -right-8 -top-10 w-32 h-32 rounded-full bg-white opacity-55"></div>
-              <div class="absolute right-12 bottom-[-42px] w-24 h-24 rounded-full bg-sun opacity-25"></div>
-              <div class="relative flex justify-between gap-4">
-                <div>
-                  <div class="flex items-center gap-1.5 text-ink/60 text-xs font-bold">
-                    <i data-lucide="map-pin" class="w-3.5 h-3.5"></i>
-                    <span>{{ String(trip.city).toUpperCase() }}</span>
-                  </div>
-                  <p class="mt-2 text-lg font-bold text-ink">{{ formatDateRange(trip.startDate, trip.endDate) }}</p>
-                  <p class="mt-1 text-xs text-ink/50 font-semibold">{{ tripDays.length }} 天 · {{ totalPlans }} 個行程</p>
-                </div>
-                <div class="text-right shrink-0">
-                  <p class="text-[10px] tracking-wider text-ink/50 font-bold uppercase">預覽天氣</p>
-                  <div class="mt-1 flex items-center justify-end gap-1.5 font-bold text-ink text-xl">
-                    <span>{{ weatherForSelected.icon }}</span>
-                  </div>
-                </div>
+            <!-- Trip Card -->
+            <div class="mt-5 rounded-[24px] bg-gradient-to-br from-mint via-white to-[#e8f2fb] p-5 relative overflow-hidden shadow-sm border border-white">
+              <div class="absolute -right-6 -bottom-6 w-32 h-32 rounded-full bg-sun opacity-30"></div>
+              <div class="relative z-10 flex justify-between">
+                <div class="text-xs text-ink/50 font-semibold flex items-center gap-1"><i data-lucide="map-pin" class="w-3.5 h-3.5"></i> {{ trip.city }}</div>
+                <div class="text-xs text-ink/50 font-semibold">預算使用</div>
+              </div>
+              <div class="relative z-10 mt-2 flex justify-between items-end">
+                <div class="text-2xl font-bold text-ink tracking-tight">{{ tripHeroRange }}</div>
+                <div class="text-xl font-bold text-ink">NT${{ formatMoney(totalExpenses('TWD')) }}</div>
+              </div>
+              <div class="relative z-10 mt-3 flex justify-between items-center">
+                <div class="text-xs text-ink/50 font-semibold">{{ tripDays.length }} 天 · {{ totalPlans }} 個行程</div>
+                <div class="w-20 h-1.5 rounded-full bg-line overflow-hidden"><div class="h-full bg-sageDeep transition-all" :style="{width: budgetPercent + '%'}"></div></div>
               </div>
             </div>
           </header>
 
-          <!-- 水平日曆 (切齊左右邊界) -->
+          <!-- 日期選擇 (切齊邊界) -->
           <div class="px-5 mt-2">
-            <div class="flex gap-2.5 overflow-x-auto hide-scrollbar pb-2">
+            <div class="flex gap-3 overflow-x-auto hide-scrollbar py-1">
               <button
-                v-for="(day, index) in tripDays"
+                v-for="(day, i) in tripDays"
                 :key="day.isoDate"
-                class="flex-1 min-w-[62px] max-w-[76px] rounded-[20px] py-3 text-center transition-all border shadow-sm"
-                :class="selectedDay === index ? 'border-sageDeep bg-sageDeep text-white shadow-card' : 'border-line bg-white text-ink hover:bg-fog'"
-                @click="selectedDay = index"
+                class="min-w-[66px] rounded-2xl py-3 flex flex-col items-center justify-center transition border shadow-sm"
+                :class="selectedDay === i ? 'bg-sageDeep text-white border-sageDeep' : 'bg-white text-ink border-line hover:bg-fog'"
+                @click="selectedDay = i"
               >
-                <span class="block text-[10px] font-bold opacity-80">DAY {{ index + 1 }}</span>
-                <span class="mt-1 block text-xl font-bold leading-none">{{ day.day }}</span>
-                <span class="mt-1 block text-[10px] font-semibold opacity-70">{{ day.weekday }}</span>
+                <span class="text-[10px] font-bold opacity-80">DAY {{ i + 1 }}</span>
+                <span class="text-xl font-bold mt-1 leading-none">{{ day.day }}</span>
+                <span class="text-[10px] font-semibold opacity-80 mt-1">{{ day.weekday }}</span>
               </button>
             </div>
           </div>
 
           <!-- 天氣卡片 -->
-          <div class="px-5 mt-3">
-            <div class="rounded-[24px] p-4 bg-gradient-to-br from-mint to-white border border-white shadow-card">
-              <div class="flex items-center justify-between gap-4">
-                <div class="flex items-center gap-3">
-                  <div class="w-12 h-12 rounded-2xl bg-white/85 grid place-items-center text-2xl shadow-sm">{{ weatherForSelected.icon }}</div>
-                  <div class="min-w-0">
-                    <p class="text-[10px] font-bold tracking-widest text-sageDeep uppercase">NAVER 行前天氣 · {{ shortDate(selectedDate) }}</p>
-                    <p class="mt-0.5 text-base font-bold text-ink">{{ weatherForSelected.label }}</p>
-                  </div>
-                </div>
-                <div class="text-right">
-                  <p class="text-xl font-bold">{{ weatherForSelected.temp }}</p>
+          <div class="px-5 mt-4">
+            <div class="bg-white rounded-3xl p-4 shadow-sm border border-line flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <div class="text-3xl drop-shadow-sm">{{ weatherForSelected.icon }}</div>
+                <div>
+                  <p class="text-xs font-semibold text-ink/50">行前天氣 · {{ shortDate(selectedDate) }}</p>
+                  <p class="text-base font-bold text-ink mt-0.5">{{ weatherForSelected.label }}</p>
                 </div>
               </div>
-              <p class="mt-3 pt-3 border-t border-line text-[11px] leading-relaxed text-ink/60 font-semibold">{{ weatherOutfitTip }}</p>
+              <div class="text-right">
+                <p class="text-xl font-bold text-ink tracking-widest">{{ weatherForSelected.temp }}</p>
+                <button class="mt-1 text-[10px] font-bold text-sageDeep flex items-center justify-end gap-1 hover:text-sage transition">
+                  <i data-lucide="refresh-cw" class="w-3 h-3"></i>更新天氣
+                </button>
+              </div>
             </div>
+            <p class="mt-2.5 text-[10px] text-ink/40 font-semibold px-1">{{ weatherOutfitTip }}</p>
           </div>
 
-          <!-- 行程列表 -->
-          <div class="px-5 mt-6 flex items-center justify-between mb-4">
+          <!-- 行程列表頭 -->
+          <div class="px-5 mt-8 mb-4 flex items-center justify-between">
             <div>
-              <p class="text-xs text-ink/50 font-bold uppercase">{{ selectedDayName }}</p>
-              <h2 class="text-xl font-bold tracking-tight text-ink mt-0.5">今天的行程</h2>
+              <p class="text-[10px] text-ink/50 font-bold uppercase tracking-wider">{{ selectedDayName }}</p>
+              <h2 class="text-2xl font-bold text-ink mt-0.5">今天的行程</h2>
             </div>
-            <button @click="openScheduleModal()" class="px-4 py-2 rounded-full bg-sageDeep text-white text-xs font-bold flex items-center gap-1.5 shadow-card transition active:scale-95">
+            <button @click="openScheduleModal()" class="px-4 py-2.5 rounded-full bg-sageDeep text-white text-sm font-bold flex items-center gap-1.5 shadow-md transition active:scale-95">
               <i data-lucide="plus" class="w-4 h-4"></i>新增
             </button>
           </div>
 
-          <div class="px-5">
-            <div v-if="!activeDay.items.length" class="rounded-[24px] border border-dashed border-sage bg-white/70 px-5 py-10 text-center">
+          <!-- 每日行程卡片列表 -->
+          <div class="px-5 space-y-4">
+            <div v-if="!activeDay.items.length" class="rounded-[24px] border border-dashed border-sage bg-white/70 px-5 py-8 text-center">
               <p class="text-sm font-bold text-ink">這一天還沒有行程</p>
             </div>
             
             <article
               v-for="(item, itemIndex) in activeDay.items"
               :key="item.id"
-              class="timeline-line relative flex gap-3 pb-4"
+              class="flex gap-3 relative"
             >
-              <div class="relative z-10 grid h-9 w-9 shrink-0 place-items-center rounded-[14px] border-4 border-fog bg-mint text-xs font-bold text-sageDeep">
-                {{ scheduleCategoryIcon(item.category) }}
+              <div class="w-10 h-10 rounded-full bg-[#fcf8e3] border border-white shadow-sm flex items-center justify-center shrink-0 text-lg z-10">
+                {{ transportIcon(item.transport) }}
               </div>
-              <div class="paper-card relative min-w-0 flex-1 rounded-[22px] p-4 shadow-card">
-                <div class="flex items-center gap-2 mb-1.5">
-                  <span class="text-sm font-bold text-sageDeep">{{ item.time }}</span>
-                  <span class="rounded-full bg-mint px-2 py-0.5 text-[10px] font-bold text-sageDeep">{{ item.category }}</span>
+              
+              <div class="flex-1 bg-white rounded-3xl p-4 shadow-sm border border-line relative">
+                <div class="flex items-center gap-2 mb-2">
+                  <span class="font-bold text-sageDeep text-sm">{{ item.time }}</span>
+                  <span class="bg-mint text-sageDeep px-2 py-0.5 rounded-full text-[10px] font-bold">{{ item.category }}</span>
                 </div>
                 
-                <h3 class="text-base font-bold text-ink pr-10">{{ item.title }}</h3>
-                <p v-if="item.location" class="mt-1 text-xs text-ink/60 font-semibold flex items-center gap-1"><i data-lucide="map-pin" class="w-3.5 h-3.5"></i> {{ item.location }}</p>
-                <p v-if="item.note" class="mt-2 text-xs leading-relaxed text-ink/70 whitespace-pre-line bg-fog p-2.5 rounded-xl border border-line">{{ item.note }}</p>
+                <h3 class="font-bold text-ink text-lg pr-8 truncate">{{ item.title }}</h3>
+                <p class="text-xs text-ink/50 font-semibold flex items-center gap-1 mt-1.5 truncate"><i data-lucide="map-pin" class="w-3.5 h-3.5"></i> {{ item.location || '尚未填寫地點' }}</p>
                 
-                <!-- 導航與預覽按鈕放在底部 -->
-                <div class="mt-3 pt-3 border-t border-line flex flex-wrap items-center gap-2">
-                  <button class="text-xs font-bold text-sageDeep bg-mint px-3 py-1.5 rounded-xl flex items-center gap-1.5 hover:bg-sageDeep hover:text-white transition" @click="navigateTo(item.location || item.title, item.transport)">
-                    <i data-lucide="navigation" class="w-3 h-3"></i> 導航 ({{ item.transport === '地鐵' ? '韓巢' : 'Naver' }})
-                  </button>
-                  <a v-if="item.url" :href="item.url" target="_blank" rel="noopener" class="text-xs font-bold text-ink/70 bg-fog border border-line px-3 py-1.5 rounded-xl flex items-center gap-1.5 hover:bg-white transition">
-                    <i data-lucide="link" class="w-3 h-3"></i> 網址預覽
-                  </a>
-                </div>
-                
-                <!-- 右側懸浮操作按鈕 -->
-                <div class="absolute right-3 top-3 flex items-center gap-1">
-                  <div class="flex flex-col gap-0.5">
-                    <button class="text-ink/20 hover:text-ink/60 disabled:opacity-0 transition" :disabled="itemIndex === 0" @click="moveSchedule(itemIndex, -1)"><i data-lucide="chevron-up" class="w-4.5 h-4.5"></i></button>
-                    <button class="text-ink/20 hover:text-ink/60 disabled:opacity-0 transition" :disabled="itemIndex === activeDay.items.length - 1" @click="moveSchedule(itemIndex, 1)"><i data-lucide="chevron-down" class="w-4.5 h-4.5"></i></button>
+                <div class="absolute right-3 top-3 flex flex-col items-center gap-1.5">
+                  <div class="flex flex-col gap-0.5 text-ink/20">
+                    <button class="hover:text-ink/60 disabled:opacity-0 transition" :disabled="itemIndex === 0" @click="moveSchedule(itemIndex, -1)"><i data-lucide="chevron-up" class="w-4.5 h-4.5"></i></button>
+                    <button class="hover:text-ink/60 disabled:opacity-0 transition" :disabled="itemIndex === activeDay.items.length - 1" @click="moveSchedule(itemIndex, 1)"><i data-lucide="chevron-down" class="w-4.5 h-4.5"></i></button>
                   </div>
-                  <button class="w-8 h-8 rounded-xl bg-fog text-ink/40 grid place-items-center hover:text-sageDeep transition" @click="openScheduleModal(item)">
+                  <button class="w-8 h-8 rounded-full border border-line bg-fog text-ink/40 flex items-center justify-center hover:bg-white hover:text-sageDeep transition" @click="openScheduleModal(item)">
                     <i data-lucide="more-horizontal" class="w-4 h-4"></i>
                   </button>
                 </div>
               </div>
             </article>
-            <p class="mt-3 text-[10px] text-center text-ink/40 font-semibold mb-6">點擊導航按鈕，將自動開啟 Naver Maps 或韓巢地鐵 APP。</p>
+            
+            <p class="mt-4 text-[10px] text-center text-ink/40 font-semibold mb-6">頁面顯示的是依距離與交通方式推算的時間；點選交通卡片可在 Maps 查看即時導航時間。</p>
           </div>
         </div>
 
@@ -398,17 +333,17 @@
               <p class="text-xs font-bold tracking-[0.15em] text-sageDeep uppercase">Trip Wallet</p>
               <h1 class="mt-1 font-sans text-3xl font-bold text-ink">旅行記帳</h1>
             </div>
-            <button class="rounded-2xl bg-sageDeep px-4 py-2 text-xs font-bold text-white shadow-card transition active:scale-95 flex items-center gap-1" @click="openExpenseModal()"><i data-lucide="plus" class="w-3.5 h-3.5"></i> 記一筆</button>
+            <button class="rounded-full bg-sageDeep px-4 py-2 text-xs font-bold text-white shadow-card transition active:scale-95 flex items-center gap-1" @click="openExpenseModal()"><i data-lucide="plus" class="w-3.5 h-3.5"></i> 記一筆</button>
           </div>
 
           <div class="grid grid-cols-2 gap-3 mb-5">
-            <article class="paper-card rounded-[22px] p-4 flex flex-col justify-center bg-gradient-to-br from-[#def5f1] to-[#fff0d7]">
-              <p class="text-[10px] text-ink/60 font-bold tracking-wider">總支出 (TWD)</p>
+            <article class="soft-card rounded-[22px] p-4 flex flex-col justify-center">
+              <p class="text-[10px] text-white/80 font-bold tracking-wider">總支出 (TWD)</p>
               <p class="mt-1 text-2xl font-bold tracking-tight">NT$ {{ formatMoney(totalExpenses('TWD')) }}</p>
-              <p class="mt-2 text-[10px] text-ink/60 font-bold">共 {{ expenses.length }} 筆記錄</p>
+              <p class="mt-2 text-[10px] text-white/70 font-semibold">共 {{ expenses.length }} 筆記錄</p>
             </article>
 
-            <article class="paper-card rounded-[22px] p-4 flex flex-col justify-center">
+            <article class="bg-white rounded-[22px] p-4 shadow-sm border border-line flex flex-col justify-center">
               <p class="text-[10px] text-sageDeep font-bold tracking-wider mb-1">分帳結算狀態</p>
               <p class="text-sm font-bold text-ink leading-relaxed whitespace-pre-line">{{ settlementMessage }}</p>
             </article>
@@ -422,8 +357,8 @@
           </div>
 
           <div class="space-y-3">
-            <article v-for="expense in filteredSortedExpenses" :key="expense.id" class="paper-card relative flex items-center gap-3.5 rounded-[22px] p-3.5">
-              <span class="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-mint text-xl">{{ categoryIcon(expense.category) }}</span>
+            <article v-for="expense in filteredSortedExpenses" :key="expense.id" class="bg-white border border-line relative flex items-center gap-3.5 rounded-[22px] p-3.5 shadow-sm">
+              <span class="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-mint text-sageDeep text-xl">{{ categoryIcon(expense.category) }}</span>
               <div class="min-w-0 flex-1">
                 <p class="truncate text-sm font-bold text-ink">{{ expense.title }}</p>
                 <p class="mt-1 text-[10px] font-semibold text-ink/60">{{ formatMonthDayShort(expense.date) }} · {{ expense.payment }}</p>
@@ -435,7 +370,7 @@
                 class="absolute right-2 top-1/2 grid h-10 w-8 -translate-y-1/2 place-items-center rounded-xl text-ink/40 hover:text-sageDeep hover:bg-fog transition"
                 @click="openExpenseModal(expense)"
               >
-                <i data-lucide="edit-2" class="w-4 h-4"></i>
+                <i data-lucide="more-horizontal" class="w-4 h-4"></i>
               </button>
             </article>
             
@@ -453,7 +388,7 @@
             <p class="mt-2 text-sm leading-relaxed text-ink/70 font-semibold">一鍵切換敬語模式，聽發音跟著念。</p>
           </div>
 
-          <article class="mb-5 rounded-[24px] bg-white border border-line p-4 shadow-card relative overflow-hidden">
+          <article class="mb-5 rounded-[24px] bg-white border border-line p-4 shadow-sm relative overflow-hidden">
             <div class="absolute -right-4 -top-6 text-[80px] opacity-[0.03] font-bold text-sageDeep">가</div>
             <div class="relative z-10 flex gap-3 mb-3">
               <span class="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-mint text-sageDeep shadow-sm"><i data-lucide="message-circle" class="w-5 h-5"></i></span>
@@ -473,7 +408,7 @@
               v-for="category in koreanCategories"
               :key="category"
               class="shrink-0 rounded-full border px-4 py-2 text-xs font-bold transition"
-              :class="koreanFilter === category ? 'border-sageDeep bg-sageDeep text-white shadow-sm' : 'border-line bg-white text-ink/70'"
+              :class="koreanFilter === category ? 'border-sageDeep bg-sageDeep text-white shadow-sm' : 'border-line bg-white text-ink/70 hover:bg-fog'"
               @click="koreanFilter = category"
             >
               {{ category }}
@@ -481,7 +416,7 @@
           </div>
 
           <div class="space-y-3">
-            <article v-for="phrase in filteredKoreanPhrases" :key="phrase.id" class="paper-card rounded-[22px] p-4 flex gap-3">
+            <article v-for="phrase in filteredKoreanPhrases" :key="phrase.id" class="bg-white border border-line rounded-[22px] p-4 flex gap-3 shadow-sm">
               <div class="min-w-0 flex-1">
                 <span class="inline-block rounded-full bg-fog border border-line px-2.5 py-1 text-[10px] font-bold text-sageDeep mb-2">{{ phrase.category }}</span>
                 <p lang="ko" class="text-xl font-bold text-ink">{{ honorificMode === 'highest' ? phrase.highest : phrase.general }}</p>
@@ -495,10 +430,10 @@
             </article>
           </div>
         </div>
-      </transition>
+      </section>
 
       <!-- 底部導覽列 (4個) -->
-      <nav class="bottom-nav safe-bottom fixed bottom-0 left-0 z-40 grid w-full grid-cols-4 border-t border-line bg-fog/95 px-2 pt-2 backdrop-blur-xl" aria-label="主要選單">
+      <nav class="bottom-nav safe-bottom fixed bottom-0 left-0 z-40 grid w-full grid-cols-4 border-t border-line bg-white/95 px-2 pt-2 backdrop-blur-xl" aria-label="主要選單">
         <button
           v-for="tab in tabs"
           :key="tab.id"
@@ -518,7 +453,7 @@
         <section class="modal-sheet max-h-[92vh] w-full max-w-[536px] overflow-y-auto rounded-[28px] p-5 shadow-float bg-fog border border-white">
           <div class="mb-5 flex items-center justify-between">
             <h2 class="font-sans text-xl font-bold text-ink">{{ modalTitle }}</h2>
-            <button class="grid h-9 w-9 place-items-center rounded-xl bg-white border border-line text-ink font-bold shadow-sm" @click="closeModal"><i data-lucide="x" class="w-4.5 h-4.5"></i></button>
+            <button class="grid h-9 w-9 place-items-center rounded-xl bg-white border border-line text-ink font-bold shadow-sm hover:bg-fog" @click="closeModal"><i data-lucide="x" class="w-4.5 h-4.5"></i></button>
           </div>
 
           <!-- Aa 字體調整 -->
@@ -550,11 +485,11 @@
             <div class="grid grid-cols-2 gap-3">
               <label class="block">
                 <span class="mb-1.5 block text-xs font-bold text-ink/80">出發日期</span>
-                <input v-model="tripForm.startDate" required type="date" class="w-full rounded-2xl border border-line bg-white px-3 py-3 outline-none focus:border-sageDeep transition font-semibold" />
+                <input v-model="tripForm.startDate" required type="date" class="w-full rounded-2xl border border-line bg-white px-3 py-3 outline-none focus:border-sageDeep transition font-semibold text-sm" />
               </label>
               <label class="block">
                 <span class="mb-1.5 block text-xs font-bold text-ink/80">結束日期</span>
-                <input v-model="tripForm.endDate" required :min="tripForm.startDate" type="date" class="w-full rounded-2xl border border-line bg-white px-3 py-3 outline-none focus:border-sageDeep transition font-semibold" />
+                <input v-model="tripForm.endDate" required :min="tripForm.startDate" type="date" class="w-full rounded-2xl border border-line bg-white px-3 py-3 outline-none focus:border-sageDeep transition font-semibold text-sm" />
               </label>
             </div>
             <label class="block">
@@ -573,13 +508,13 @@
             <div class="grid grid-cols-2 gap-3">
               <label class="block">
                 <span class="mb-1.5 block text-xs font-bold text-ink/80">日期</span>
-                <select v-model="scheduleForm.date" class="w-full rounded-2xl border border-line bg-white px-3 py-3 outline-none focus:border-sageDeep transition font-semibold">
+                <select v-model="scheduleForm.date" class="w-full rounded-2xl border border-line bg-white px-3 py-3 outline-none focus:border-sageDeep transition font-semibold text-sm">
                   <option v-for="day in days" :key="day.isoDate" :value="day.isoDate">{{ formatMonthDayShort(day.isoDate) }}</option>
                 </select>
               </label>
               <label class="block">
                 <span class="mb-1.5 block text-xs font-bold text-ink/80">時間</span>
-                <input v-model="scheduleForm.time" required type="time" class="w-full rounded-2xl border border-line bg-white px-3 py-3 outline-none focus:border-sageDeep transition font-semibold" />
+                <input v-model="scheduleForm.time" required type="time" class="w-full rounded-2xl border border-line bg-white px-3 py-3 outline-none focus:border-sageDeep transition font-semibold text-sm" />
               </label>
             </div>
             <label class="block">
@@ -589,17 +524,17 @@
             <div class="grid grid-cols-2 gap-3">
               <label class="block">
                 <span class="mb-1.5 block text-xs font-bold text-ink/80">分類</span>
-                <select v-model="scheduleForm.category" class="w-full rounded-2xl border border-line bg-white px-3 py-3 outline-none focus:border-sageDeep transition font-semibold">
+                <select v-model="scheduleForm.category" class="w-full rounded-2xl border border-line bg-white px-3 py-3 outline-none focus:border-sageDeep transition font-semibold text-sm">
                   <option v-for="cat in planCategories" :key="cat">{{ cat }}</option>
                 </select>
               </label>
               <label class="block">
                 <span class="mb-1.5 block text-xs font-bold text-ink/80">前往方式 (導航使用)</span>
-                <select v-model="scheduleForm.transport" class="w-full rounded-2xl border border-line bg-white px-3 py-3 outline-none focus:border-sageDeep transition font-semibold">
-                  <option value="地鐵">地鐵</option>
-                  <option value="計程車">計程車</option>
-                  <option value="步行">步行</option>
-                  <option value="飛行">飛行</option>
+                <select v-model="scheduleForm.transport" class="w-full rounded-2xl border border-line bg-white px-3 py-3 outline-none focus:border-sageDeep transition font-semibold text-sm">
+                  <option>地鐵</option>
+                  <option>計程車</option>
+                  <option>步行</option>
+                  <option>飛行</option>
                 </select>
               </label>
             </div>
@@ -608,13 +543,14 @@
               <input v-model.trim="scheduleForm.location" type="text" class="w-full rounded-2xl border border-line bg-white px-4 py-3 outline-none focus:border-sageDeep transition font-semibold text-sm" placeholder="例如：서울특별시 송파구 올림픽로 300" />
             </label>
             <label class="block">
-              <span class="mb-1.5 block text-xs font-bold text-ink/80">網址 (選填，加入後可直接預覽)</span>
+              <span class="mb-1.5 block text-xs font-bold text-ink/80">網址 (選填，加入後可直接點擊)</span>
               <input v-model.trim="scheduleForm.url" type="url" class="w-full rounded-2xl border border-line bg-white px-4 py-3 outline-none focus:border-sageDeep transition font-semibold text-sm" placeholder="https://..." />
             </label>
             <label class="block">
               <span class="mb-1.5 block text-xs font-bold text-ink/80">備註 (選填)</span>
               <textarea v-model.trim="scheduleForm.note" rows="2" class="w-full rounded-2xl border border-line bg-white px-4 py-3 outline-none focus:border-sageDeep transition resize-none font-semibold text-sm" placeholder="營業時間、訂位資訊..."></textarea>
             </label>
+            <p class="text-[10px] font-semibold text-ink/50 leading-relaxed bg-white border border-line p-3 rounded-xl">行程導航預設開啟 Naver Maps，選擇地鐵將自動跳轉韓巢韓國地鐵。</p>
             <div class="flex gap-3 pt-1">
               <button v-if="editingScheduleId" type="button" class="w-14 rounded-2xl border border-red-200 bg-red-50 text-red-500 font-bold hover:bg-red-100 transition" @click="deleteSchedule"><i data-lucide="trash-2" class="w-4.5 h-4.5 mx-auto"></i></button>
               <button type="submit" class="flex-1 rounded-2xl bg-sageDeep py-3.5 text-sm font-bold text-white shadow-card active:scale-[0.98] transition">儲存</button>
@@ -643,13 +579,13 @@
             <div class="grid grid-cols-2 gap-3">
               <label class="block">
                 <span class="mb-1.5 block text-xs font-bold text-ink/80">分類</span>
-                <select v-model="expenseForm.category" class="w-full rounded-2xl border border-line bg-white px-3 py-3 outline-none focus:border-sageDeep transition font-semibold">
+                <select v-model="expenseForm.category" class="w-full rounded-2xl border border-line bg-white px-3 py-3 outline-none focus:border-sageDeep transition font-semibold text-sm">
                   <option v-for="cat in expenseCategories" :key="cat">{{ cat }}</option>
                 </select>
               </label>
               <label class="block">
                 <span class="mb-1.5 block text-xs font-bold text-ink/80">付款方式</span>
-                <select v-model="expenseForm.payment" class="w-full rounded-2xl border border-line bg-white px-3 py-3 outline-none focus:border-sageDeep transition font-semibold">
+                <select v-model="expenseForm.payment" class="w-full rounded-2xl border border-line bg-white px-3 py-3 outline-none focus:border-sageDeep transition font-semibold text-sm">
                   <option value="現金">現金</option>
                   <option value="信用卡">信用卡</option>
                   <option value="電子票證">電子票證</option>
@@ -669,7 +605,7 @@
             </div>
 
             <!-- 付款人與分帳區塊 -->
-            <div class="rounded-2xl border border-line bg-white p-4 mt-2">
+            <div class="rounded-2xl border border-line bg-white p-4 mt-2 shadow-sm">
               <div class="mb-4">
                 <span class="block text-xs font-bold text-sageDeep mb-2 uppercase tracking-wide">付款人 (誰墊錢)</span>
                 <div v-for="(payer, idx) in expenseForm.payers" :key="'p'+idx" class="flex gap-2 mb-2">
@@ -722,33 +658,30 @@
       data() {
         const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
         const formatISO = date => {
+          if(isNaN(date.getTime())) return '';
           const y = date.getFullYear();
           const m = String(date.getMonth() + 1).padStart(2, '0');
           const d = String(date.getDate()).padStart(2, '0');
           return `${y}-${m}-${d}`;
         };
+        const todayStr = formatISO(new Date());
 
         const defaultState = {
           trip: {
-            title: "首爾散步計畫",
+            title: "帶蔡女士出發首爾！",
             city: "Seoul",
-            startDate: "2026-08-13",
-            endDate: "2026-08-17",
+            startDate: todayStr,
+            endDate: formatISO(new Date(Date.now() + 4 * 86400000)),
             budget: 50000,
             memberNames: ["我", "旅伴"]
           },
-          plans: [
-            { id: uid(), date: '2026-08-13', time: '14:00', title: '台灣機場T2會合', category: '交通', location: '桃園國際機場', note: '✈️ 去程航班 OZ714', transport: '飛行', url: '', order: 0 },
-            { id: uid(), date: '2026-08-13', time: '15:00', title: '入住 Daol Guesthouse', category: '住宿', location: '麻浦區弘大', note: '0813 @Daol Guesthouse 15:00 ➔ 11:00 (Agoda)', transport: '步行', url: '', order: 1 },
-            { id: uid(), date: '2026-08-13', time: '20:50', title: '搭車前往市區', category: '交通', location: '弘大站', note: '搭乘機場巴士或地鐵', transport: '地鐵', url: '', order: 2 },
-            { id: uid(), date: '2026-08-14', time: '10:00', title: '預約巨人展', category: '票券', location: '弘大周邊', note: '最早預約場次為 10:00。', transport: '步行', url: 'https://example.com', order: 0 }
-          ],
+          plans: [],
           expenses: []
         };
 
         let loaded;
         try {
-          loaded = JSON.parse(localStorage.getItem("paikan-seoul-v8")) || defaultState;
+          loaded = JSON.parse(localStorage.getItem("paikan-seoul-v7")) || defaultState;
         } catch (e) {
           loaded = defaultState;
         }
@@ -766,7 +699,7 @@
             { id: "large", label: "大字級", note: "文字較大，看起來更舒適", preview: "18px" },
             { id: "xlarge", label: "特大字級", note: "重點放大，長輩也能輕鬆看", preview: "20px" }
           ],
-          currentTab: "today",
+          currentTab: "plan", // 預設顯示行程分頁 (還原截圖樣式)
           tabs: [
             { id: "today", label: "今日", icon: "calendar-days" },
             { id: "plan", label: "行程", icon: "map" },
@@ -818,7 +751,7 @@
             { id: 'k10', category: '追星', chinese: '請看這邊', general: '여기 봐주세요', highest: '여기 봐주십시오', pronounceGeneral: '由基 怕粗些優', pronounceHighest: '由基 怕粗西系歐', tip: '拍照時吸引視線' }
           ],
 
-          weatherForSelected: { icon: '🌤️', label: '晴時多雲', temp: '26°–32°' }
+          weatherForSelected: { icon: '🌤️', label: '等待即時預報', temp: '--°' }
         };
       },
       computed: {
@@ -826,7 +759,7 @@
         days() {
           const s = new Date(this.trip.startDate);
           const e = new Date(this.trip.endDate);
-          if(isNaN(s) || isNaN(e) || e < s) return [];
+          if(isNaN(s.getTime()) || isNaN(e.getTime()) || e < s) return [];
           const res = [];
           const c = new Date(s);
           while(c <= e && res.length < 30) {
@@ -850,6 +783,16 @@
         selectedDayName() {
           const index = this.days.findIndex(d => d.isoDate === this.activeDay.isoDate);
           return index >= 0 ? `DAY ${index + 1} · ${this.shortDate(this.activeDay.isoDate)}` : '';
+        },
+        tripHeroRange() {
+          if (!this.days.length) return "旅行日期";
+          const first = this.days[0]?.isoDate;
+          const last = this.days[this.days.length - 1]?.isoDate;
+          if (!first || !last) return "旅行日期";
+          const start = new Date(first);
+          const end = new Date(last);
+          if (isNaN(start.getTime()) || isNaN(end.getTime())) return "";
+          return `${start.getFullYear()} · ${start.getMonth() + 1}/${start.getDate()} — ${end.getMonth() + 1}/${end.getDate()}`;
         },
         totalPlans() { return this.plans.length; },
         filteredKoreanPhrases() {
@@ -914,13 +857,13 @@
           }
           if (debtors.length === 0) return '目前帳目結清，無人欠款。';
           if (debtors.length === 1 && creditors.length === 1) {
-            return `${debtors[0].name} 需轉給 ${creditors[0].name} ${this.formatMoney(debtors[0].amount)}`;
+            return `${debtors[0].name} 需給 ${creditors[0].name} ${this.formatMoney(debtors[0].amount)}`;
           }
           return debtors.map(d => `${d.name} 需付 ${this.formatMoney(d.amount)}`).join('\n');
         },
         weatherOutfitTip() {
           const t = this.weatherForSelected.temp;
-          if(t.includes('--')) return '請留意天氣變化，備妥輕便雨具。';
+          if(t.includes('--')) return '目前無法取得這段日期的天氣；通常會在出發前約 16 天開放預報。';
           const parts = t.split(/[-–]/);
           const max = parseInt(parts[parts.length - 1]);
           if(isNaN(max)) return '請留意當天天氣變化。';
@@ -939,15 +882,11 @@
       },
       mounted() {
         this.applyFontSize();
-        const icons = ['☀️', '🌤️', '☁️', '🌦️'];
-        const labels = ['晴朗', '多雲時晴', '陰天', '短暫陣雨'];
-        const r = Math.floor(Math.random()*4);
-        this.weatherForSelected = { icon: icons[r], label: labels[r], temp: `${22+r}°–${28+r}°` };
         nextTick(() => window.lucide && window.lucide.createIcons());
       },
       methods: {
         saveData() {
-          localStorage.setItem("paikan-seoul-v8", JSON.stringify({
+          localStorage.setItem("paikan-seoul-v7", JSON.stringify({
             trip: this.trip,
             plans: this.plans,
             expenses: this.expenses
@@ -1000,6 +939,9 @@
         },
         scheduleCategoryIcon(c) {
           return {'交通':'車','餐飲':'食','用餐':'食','住宿':'宿','購物':'購','票券':'票','景點':'遊','放鬆':'休'}[c] || '・';
+        },
+        transportIcon(t) {
+          return {'飛行':'✈️','步行':'🚶','大眾運輸':'🚆','計程車':'🚕','地鐵':'🚇'}[t] || '🚶';
         },
         
         navigateTo(title, trans) {
