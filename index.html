@@ -9,7 +9,7 @@
   <meta name="apple-mobile-web-app-title" content="HAMKKE">
   <title>首爾散步計畫｜HAMKKE</title>
 
-  <!-- Tailwind CSS & Vue 3 & Lucide Icons -->
+  <!-- Vue 3、Tailwind CSS、Lucide Icons -->
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -73,14 +73,18 @@
     .glass {
       background: rgba(255,255,255,.92); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
     }
+    .modal-enter-active, .modal-leave-active { transition: opacity .2s ease; }
+    .modal-enter-active .modal-card, .modal-leave-active .modal-card { transition: transform .25s ease; }
+    .modal-enter-from, .modal-leave-to { opacity: 0; }
+    .modal-enter-from .modal-card, .modal-leave-to .modal-card { transform: translateY(22px); }
+    .tab-fade-enter-active, .tab-fade-leave-active { transition: opacity .16s ease, transform .16s ease; }
+    .tab-fade-enter-from, .tab-fade-leave-to { opacity: 0; transform: translateY(5px); }
+    .safe-bottom { padding-bottom: max(104px, calc(88px + env(safe-area-inset-bottom))); }
     
-    /* 動態字體大小縮放支援 */
+    /* 字體大小動態調整 */
     .font-large { font-size: 1.1rem; }
     .font-xlarge { font-size: 1.25rem; }
 
-    .tab-panel { animation: panel-in 0.28s ease both; }
-    @keyframes panel-in { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
-    
     .timeline-line::before {
       content: ""; position: absolute; left: 18px; top: 36px; bottom: -18px; width: 1.5px; background: #eaf0ec;
     }
@@ -96,20 +100,23 @@
 </head>
 
 <body>
-  <div id="app" v-cloak class="app-shell">
-    <main class="safe-bottom pb-32">
+  <div id="app" v-cloak class="app-shell" :class="['font-' + fontSize]">
+    <main class="safe-bottom">
       
-      <!-- 主視覺 Header 與卡片 (切換分頁時保持不變) -->
+      <!-- 主視覺 Header 與卡片 (對應截圖排版) -->
       <header class="px-5 pt-5 pb-3">
         <div class="flex items-center justify-between">
           <button @click="openModal('trip')" class="w-10 h-10 rounded-2xl bg-white shadow-card grid place-items-center text-ink shrink-0 transition active:scale-95" aria-label="設定">
-            <i data-lucide="map-pin" class="w-4.5 h-4.5 text-sageDeep"></i>
+            <i data-lucide="arrow-left" class="w-4 h-4"></i>
           </button>
           <div class="min-w-0 flex-1 ml-3">
             <p class="text-[11px] font-bold tracking-[.18em] text-sageDeep uppercase">MY TRAVEL JOURNAL</p>
             <h1 class="mt-1 text-[21px] leading-tight font-bold tracking-[-.04em] truncate">{{ trip.title }}</h1>
           </div>
-          <button @click="openModal('font')" class="ml-2 w-10 h-10 rounded-2xl bg-white shadow-card grid place-items-center text-sageDeep font-bold text-xs" aria-label="字體大小">
+          <button @click="openShareModal" class="ml-2 w-10 h-10 rounded-2xl bg-white shadow-card grid place-items-center text-[#7b6aa6]" aria-label="分享與共編">
+            <i data-lucide="share-2" class="w-[18px] h-[18px]"></i>
+          </button>
+          <button @click="openModal('font')" class="ml-2 w-10 h-10 rounded-2xl bg-white shadow-card grid place-items-center text-sageDeep font-bold text-xs shadow-sm" aria-label="字體大小">
             Aa
           </button>
         </div>
@@ -138,35 +145,61 @@
         </div>
       </header>
 
-      <!-- 動態分頁顯示 -->
+      <!-- 完美對齊邊界的日期選擇列 -->
+      <div class="px-5 mt-2">
+        <div class="grid grid-flow-col auto-cols-fr gap-2 pb-2">
+          <button
+            v-for="(day, index) in tripDays"
+            :key="day.date"
+            @click="selectedDate = day.date; selectedDay = index"
+            class="rounded-[20px] py-3 text-center transition-all border shadow-sm flex flex-col items-center justify-center"
+            :class="selectedDate === day.date ? 'bg-sageDeep text-white border-sageDeep shadow-card' : 'bg-white text-ink border-line'"
+          >
+            <span class="block text-[9px] font-bold opacity-75">DAY {{ index + 1 }}</span>
+            <span class="block mt-1 text-base font-bold leading-none">{{ day.day }}</span>
+            <span class="block mt-1 text-[10px] opacity-70">{{ day.weekday }}</span>
+          </button>
+        </div>
+      </div>
+
       <transition name="tab-fade" mode="out-in">
         
         <!-- ==================== 1. 今日 (Today) ==================== -->
-        <section v-if="currentTab === 'today'" key="today" class="px-5 mt-3 space-y-5">
-          <div class="rounded-[24px] p-4 bg-gradient-to-br from-mint to-white border border-white shadow-card flex items-center justify-between">
-            <div class="flex items-center gap-3">
-              <div class="w-12 h-12 rounded-2xl bg-white/85 grid place-items-center text-2xl shadow-sm">🌤️</div>
-              <div>
-                <p class="text-[10px] font-bold text-sageDeep uppercase">NAVER 天氣預報</p>
-                <p class="mt-0.5 text-base font-bold text-ink">首爾 29°C 多雲</p>
+        <section v-if="currentTab === 'today'" key="today" class="px-5 mt-3 space-y-5 pb-10">
+          <!-- 上方標題與定位圖示 -->
+          <div class="flex items-center justify-between border-b border-line pb-3">
+            <div class="flex items-center gap-1.5 font-bold text-ink text-lg tracking-wider">
+              <i data-lucide="compass" class="h-5 w-5 text-sageDeep"></i>
+              SEOUL 今日總覽
+            </div>
+            <div class="flex items-center gap-1 font-bold text-ink/70">
+              <i data-lucide="cloud" class="h-4 w-4 text-sageDeep"></i>
+              <span class="text-sm">天氣</span>
+            </div>
+          </div>
+
+          <!-- 天氣與穿搭推薦卡片 -->
+          <div class="rounded-[24px] p-4 bg-gradient-to-br from-mint to-white border border-white shadow-card space-y-3">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <div class="w-12 h-12 rounded-2xl bg-white/85 grid place-items-center text-2xl shadow-sm">🌤️</div>
+                <div>
+                  <p class="text-[10px] font-bold text-sageDeep uppercase">NAVER 天氣預報</p>
+                  <p class="mt-0.5 text-base font-bold text-ink">首爾 29°C 多雲</p>
+                </div>
+              </div>
+              <div class="text-right">
+                <p class="text-[10px] font-bold text-ink/45 uppercase tracking-wider">目前花費</p>
+                <p class="mt-0.5 text-base font-bold text-sageDeep">{{ money(totalSpentTwd) }}</p>
               </div>
             </div>
-            <div class="text-right">
-              <p class="text-[10px] font-bold text-ink/45 uppercase tracking-wider">目前花費</p>
-              <p class="mt-0.5 text-base font-bold text-sageDeep">{{ money(totalSpentTwd) }}</p>
+            <div class="pt-3 border-t border-line text-xs font-semibold text-ink/80 flex items-start gap-2">
+              <i data-lucide="shirt" class="w-4 h-4 text-sageDeep shrink-0 mt-0.5"></i>
+              <span><strong>當天穿搭推薦：</strong>8月中旬首爾悶熱，建議穿著透氣輕便短袖與薄外套，並隨身攜帶雨具。</span>
             </div>
           </div>
 
-          <!-- 穿搭推薦卡片 -->
-          <div class="rounded-[20px] bg-white border border-line p-4 shadow-sm flex items-center gap-3">
-            <span class="grid h-10 w-10 place-items-center rounded-xl bg-mint text-sageDeep"><i data-lucide="shirt" class="w-5 h-5"></i></span>
-            <div class="text-xs font-semibold text-ink/80 leading-relaxed">
-              <span class="font-bold text-sageDeep block mb-0.5">💡 當天穿搭推薦</span>
-              8月中旬首爾悶熱，建議穿著透氣輕便短袖與薄外套，並攜帶雨具。
-            </div>
-          </div>
-
-          <!-- 出遊安心卡 -->
+          <!-- 出遊安心卡 (獨立卡片) -->
           <article class="rounded-[24px] bg-white border border-line p-5 shadow-card">
             <h2 class="flex items-center gap-2 text-lg font-bold text-ink mb-4">
               <span class="grid h-8 w-8 place-items-center rounded-xl bg-mint text-sageDeep"><i data-lucide="shield-check" class="w-4.5 h-4.5"></i></span>
@@ -209,36 +242,50 @@
               </div>
             </div>
           </article>
+
+          <!-- 今日行程摘要 -->
+          <section>
+            <div class="mb-4 flex items-center justify-between">
+              <div>
+                <p class="text-xs text-ink/45 font-bold uppercase">{{ selectedDayName }}</p>
+                <h2 class="text-xl font-bold tracking-[-.03em] text-ink">今天的行程</h2>
+              </div>
+              <button @click="activeTab = 'schedule'" class="text-xs font-bold text-sageDeep flex items-center gap-1 bg-mint px-3 py-1.5 rounded-full">管理行程 <i data-lucide="chevron-right" class="w-3 h-3"></i></button>
+            </div>
+
+            <div v-if="!selectedPlans.length" class="rounded-[24px] border border-dashed border-sage bg-white/70 px-5 py-8 text-center">
+              <p class="text-sm font-bold text-ink">這一天還沒有行程</p>
+            </div>
+
+            <div class="space-y-3">
+              <article v-for="item in selectedPlans" :key="item.id" class="paper-card rounded-[22px] p-4 shadow-sm flex items-start gap-3.5">
+                <div class="bg-mint text-sageDeep px-2.5 py-2 rounded-xl text-xs font-black text-center min-w-[54px] shrink-0">
+                  {{ item.time }}
+                </div>
+                <div class="min-w-0 flex-1">
+                  <h3 class="font-bold text-ink text-sm truncate">{{ item.title }}</h3>
+                  <p class="text-xs text-ink/50 mt-1 flex items-center">
+                    <i data-lucide="map-pin" class="w-3.5 h-3.5 mr-1 text-sageDeep shrink-0"></i> {{ item.location || '首爾市區' }}
+                  </p>
+                </div>
+              </article>
+            </div>
+          </section>
         </section>
 
         <!-- ==================== 2. 行程 (Schedule) ==================== -->
-        <section v-else-if="activeTab === 'schedule'" key="schedule" class="px-5 mt-2">
-          <!-- 完美對齊邊界且文字置中的日曆格子 -->
-          <div class="grid grid-flow-col auto-cols-fr gap-2 pb-2">
-            <button
-              v-for="(day, index) in tripDays"
-              :key="day.date"
-              @click="selectedDate = day.date; selectedDay = index"
-              class="rounded-[20px] py-3 text-center transition-all border shadow-sm flex flex-col items-center justify-center"
-              :class="selectedDate === day.date ? 'bg-sageDeep text-white border-sageDeep shadow-card' : 'bg-white text-ink border-line'"
-            >
-              <span class="block text-[9px] font-bold opacity-75">DAY {{ index + 1 }}</span>
-              <span class="block mt-1 text-xl font-bold leading-none">{{ day.day }}</span>
-              <span class="block mt-1 text-[10px] opacity-70">{{ day.weekday }}</span>
-            </button>
-          </div>
-
-          <div class="mt-6 mb-4 flex items-center justify-between">
+        <section v-else-if="activeTab === 'schedule'" key="schedule" class="px-5 mt-3 space-y-4 pb-10">
+          <div class="flex items-center justify-between">
             <div>
-              <p class="text-[10px] text-ink/50 font-bold uppercase tracking-wider">{{ selectedDayName }}</p>
-              <h2 class="text-2xl font-bold text-ink mt-0.5">今天的行程</h2>
+              <p class="text-xs text-ink/45 font-bold uppercase">{{ selectedDayName }}</p>
+              <h2 class="text-xl font-bold tracking-[-.03em] text-ink">詳細行程管理</h2>
             </div>
-            <button @click="openPlanForm()" class="px-4 py-2.5 rounded-full bg-sageDeep text-white text-sm font-bold flex items-center gap-1.5 shadow-md transition active:scale-95">
+            <button @click="openPlanForm()" class="h-10 px-4 rounded-2xl bg-sageDeep text-white text-xs font-semibold flex items-center gap-1.5 shadow-card">
               <i data-lucide="plus" class="w-4 h-4"></i>新增
             </button>
           </div>
 
-          <div v-if="selectedPlans.length" class="space-y-4 pb-10">
+          <div v-if="selectedPlans.length" class="space-y-3">
             <template v-for="(plan, index) in selectedPlans" :key="plan.id">
               <div v-if="index > 0" class="relative ml-4 pl-8 py-1.5">
                 <span class="absolute left-[13px] inset-y-0 w-px bg-[#dcece6]"></span>
@@ -284,16 +331,22 @@
                   </div>
                 </div>
                 <p v-if="plan.note" class="mt-3 text-xs leading-relaxed text-ink/70 bg-fog rounded-xl p-2.5 border border-line whitespace-pre-line">{{ plan.note }}</p>
+                
+                <div class="mt-3 pt-3 border-t border-line flex items-center justify-end">
+                  <button class="text-xs font-bold text-sageDeep bg-mint px-3 py-1.5 rounded-xl flex items-center gap-1.5 hover:bg-sageDeep hover:text-white transition shadow-2xs" @click="openNavigation(plan)">
+                    <i data-lucide="navigation" class="w-3 h-3"></i> 導航 ({{ plan.transport === '地鐵' ? '韓巢' : 'Naver' }})
+                  </button>
+                </div>
               </article>
             </template>
           </div>
-          <div v-else class="rounded-[24px] border border-dashed border-sage/35 p-8 text-center bg-white/60 mb-10">
+          <div v-else class="rounded-[24px] border border-dashed border-sage/35 p-8 text-center bg-white/60">
             <p class="text-sm font-bold text-ink">這天還沒有行程</p>
           </div>
         </section>
 
         <!-- ==================== 3. 記帳 (Expense) ==================== -->
-        <section v-else-if="activeTab === 'expense'" key="expense" class="px-5 mt-2 space-y-4 pb-28">
+        <section v-else-if="activeTab === 'expense'" key="expense" class="px-5 mt-2 space-y-4 pb-10">
           <div class="flex items-end justify-between">
             <div>
               <p class="text-xs text-ink/45 uppercase font-bold tracking-wider">Trip Wallet</p>
@@ -345,7 +398,7 @@
         </section>
 
         <!-- ==================== 4. 韓文 (Language) ==================== -->
-        <section v-else-if="activeTab === 'language'" key="language" class="px-5 mt-2 space-y-4 pb-28">
+        <section v-else-if="activeTab === 'language'" key="language" class="px-5 mt-2 space-y-4 pb-10">
           <div class="flex items-end justify-between">
             <div>
               <p class="text-xs text-ink/45 uppercase font-bold tracking-wider">Korean Class</p>
@@ -380,7 +433,6 @@
             </article>
           </div>
         </section>
-
       </transition>
     </main>
 
@@ -404,47 +456,133 @@
       <div v-if="modal === 'plan'" class="fixed inset-0 z-[1000] bg-ink/35 flex items-end justify-center" @click.self="closeModal">
         <div class="modal-card w-full max-w-[440px] max-h-[90vh] overflow-y-auto rounded-t-[30px] bg-fog p-5 pb-8 shadow-float" role="dialog" aria-modal="true" aria-label="編輯行程">
           <div class="flex items-center justify-between">
-            <h2 class="text-xl font-bold text-ink">{{ planForm.id ? '編輯行程' : '新增行程' }}</h2>
-            <button @click="closeModal" class="w-9 h-9 rounded-xl bg-white border border-line grid place-items-center text-ink"><i data-lucide="x" class="w-4 h-4"></i></button>
+            <h2 class="text-xl font-bold">{{ planForm.id ? '編輯行程' : '新增行程' }}</h2>
+            <button @click="closeModal" class="w-9 h-9 rounded-xl bg-white grid place-items-center"><i data-lucide="x" class="w-4 h-4"></i></button>
           </div>
           <form @submit.prevent="savePlan" class="mt-5 space-y-4">
             <div class="grid grid-cols-2 gap-3">
-              <label class="text-xs font-semibold text-ink">日期
+              <label class="text-xs font-semibold">日期
                 <select v-model="planForm.date" class="mt-1.5 w-full h-12 rounded-2xl bg-white border border-line px-3 font-normal">
                   <option v-for="day in tripDays" :key="day.date" :value="day.date">{{ shortDate(day.date) }}</option>
                 </select>
               </label>
-              <label class="text-xs font-semibold text-ink">時間
+              <label class="text-xs font-semibold">時間
                 <input v-model="planForm.time" type="time" required class="mt-1.5 w-full h-12 rounded-2xl bg-white border border-line px-3 font-normal">
               </label>
             </div>
-            <label class="block text-xs font-semibold text-ink">地名 (行程名稱)
-              <input v-model.trim="planForm.title" type="text" required placeholder="例如：景福宮" class="mt-1.5 w-full h-12 rounded-2xl bg-white border border-line px-4 font-normal">
+            <label class="block text-xs font-semibold">地名 (行程名稱)
+              <input v-model.trim="planForm.title" type="text" required placeholder="例如：樂天世界水族館" class="mt-1.5 w-full h-12 rounded-2xl bg-white border border-line px-4 font-normal">
             </label>
             <div class="grid grid-cols-2 gap-3">
-              <label class="text-xs font-semibold text-ink">分類
+              <label class="text-xs font-semibold">分類
                 <select v-model="planForm.category" class="mt-1.5 w-full h-12 rounded-2xl bg-white border border-line px-3 font-normal">
                   <option v-for="category in planCategories" :key="category">{{ category }}</option>
                 </select>
               </label>
-              <label class="text-xs font-semibold text-ink">前往方式
+              <label class="text-xs font-semibold">前往方式 (導航使用)
                 <select v-model="planForm.transport" class="mt-1.5 w-full h-12 rounded-2xl bg-white border border-line px-3 font-normal">
-                  <option value="subway">地鐵</option>
-                  <option value="taxi">計程車</option>
-                  <option value="walk">步行</option>
+                  <option value="subway">地鐵 (開啟韓巢)</option>
+                  <option value="taxi">計程車 (開啟Naver)</option>
+                  <option value="walk">步行 (開啟Naver)</option>
                   <option value="flight">飛行</option>
                 </select>
               </label>
             </div>
-            <label class="block text-xs font-semibold text-ink">網址連結 (選填)
-              <input v-model.trim="planForm.url" type="url" placeholder="https://..." class="mt-1.5 w-full h-12 rounded-2xl bg-white border border-line px-4 font-normal">
+            <label class="block text-xs font-semibold">網址 (選填，可預覽網頁)
+              <input v-model.trim="planForm.url" type="url" placeholder="例如：https://www.lotteworld.com" class="mt-1.5 w-full h-12 rounded-2xl bg-white border border-line px-4 font-normal">
             </label>
-            <label class="block text-xs font-semibold text-ink">備註
-              <textarea v-model.trim="planForm.note" rows="2" placeholder="備註說明…" class="mt-1.5 w-full rounded-2xl bg-white border border-line px-4 py-3 font-normal resize-none"></textarea>
+            <label class="block text-xs font-semibold">備註
+              <textarea v-model.trim="planForm.note" rows="3" placeholder="營業時間、訂位資訊、想吃的品項…" class="mt-1.5 w-full rounded-2xl bg-white border border-line px-4 py-3 font-normal resize-none"></textarea>
             </label>
             <div class="flex gap-3 pt-1">
               <button v-if="planForm.id" type="button" @click="deletePlan" class="h-12 w-12 rounded-2xl border border-red-200 text-red-500 grid place-items-center"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
-              <button type="submit" class="h-12 flex-1 rounded-2xl bg-sageDeep text-white font-semibold shadow-card">儲存行程</button>
+              <button type="submit" class="h-12 flex-1 rounded-2xl bg-sageDeep text-white font-semibold">儲存行程</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </transition>
+
+    <!-- Expense modal -->
+    <transition name="modal">
+      <div v-if="modal === 'expense'" class="fixed inset-0 z-[1000] bg-ink/35 flex items-end justify-center" @click.self="closeModal">
+        <div class="modal-card w-full max-w-[440px] max-h-[90vh] overflow-y-auto rounded-t-[30px] bg-fog p-5 pb-8 shadow-float" role="dialog" aria-modal="true" aria-label="編輯支出">
+          <div class="flex items-center justify-between">
+            <h2 class="text-xl font-bold">{{ expenseForm.id ? '編輯支出' : '新增支出' }}</h2>
+            <button @click="closeModal" class="w-9 h-9 rounded-xl bg-white grid place-items-center"><i data-lucide="x" class="w-4 h-4"></i></button>
+          </div>
+          <form @submit.prevent="saveExpense" class="mt-5 space-y-4">
+            <label class="block text-xs font-semibold">支出項目
+              <input v-model.trim="expenseForm.title" type="text" required placeholder="例如：T-money 儲值" class="mt-1.5 w-full h-12 rounded-2xl bg-white border border-line px-4 font-normal">
+            </label>
+            <div class="grid grid-cols-[1fr_100px] gap-3">
+              <label class="text-xs font-semibold">總金額
+                <input v-model.number="expenseForm.amount" type="number" min="0" step="0.01" required class="mt-1.5 w-full h-12 rounded-2xl bg-white border border-line px-4 font-normal">
+              </label>
+              <label class="text-xs font-semibold">幣別
+                <select v-model="expenseForm.currency" class="mt-1.5 w-full h-12 rounded-2xl bg-white border border-line px-3 font-normal">
+                  <option v-for="currency in currencies" :key="currency">{{ currency }}</option>
+                </select>
+              </label>
+            </div>
+            
+            <div class="grid grid-cols-2 gap-3">
+              <label class="text-xs font-semibold">分類
+                <select v-model="expenseForm.category" class="mt-1.5 w-full h-12 rounded-2xl bg-white border border-line px-3 font-normal">
+                  <option v-for="category in expenseCategories" :key="category">{{ category }}</option>
+                </select>
+              </label>
+              <label class="text-xs font-semibold">付款方式
+                <select v-model="expenseForm.payment" class="mt-1.5 w-full h-12 rounded-2xl bg-white border border-line px-3 font-normal">
+                  <option value="cash">現金</option>
+                  <option value="credit">信用卡</option>
+                  <option value="electronic">電子票證</option>
+                </select>
+              </label>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+              <label class="text-xs font-semibold">日期
+                <input v-model="expenseForm.date" type="date" required class="mt-1.5 w-full h-12 rounded-2xl bg-white border border-line px-3 font-normal">
+              </label>
+              <label class="text-xs font-semibold">參考匯率
+                <input v-model.number="expenseForm.rate" type="number" min="0" step="0.0001" required class="mt-1.5 w-full h-12 rounded-2xl bg-white border border-line px-3 font-normal">
+              </label>
+            </div>
+
+            <!-- 進階付款與分帳區域 -->
+            <div class="rounded-2xl border border-line p-4 bg-white space-y-4">
+              <div>
+                <label class="block text-xs font-bold text-sageDeep mb-2">付款人 (誰先付錢的？)</label>
+                <div v-for="(payer, idx) in (expenseForm.payers || [])" :key="'p'+idx" class="flex gap-2 mt-1">
+                  <select v-model="payer.name" class="w-1/2 h-10 rounded-xl bg-fog border border-line px-2 text-xs">
+                    <option v-for="m in trip.memberNames" :key="m">{{m}}</option>
+                  </select>
+                  <input v-model.number="payer.amount" type="number" class="w-1/2 h-10 rounded-xl bg-fog border border-line px-2 text-xs" placeholder="輸入金額">
+                  <button type="button" @click="expenseForm.payers.splice(idx, 1)" class="w-8 h-10 flex items-center justify-center text-red-400 font-bold" v-if="(expenseForm.payers || []).length > 1">X</button>
+                </div>
+                <button type="button" @click="(expenseForm.payers = expenseForm.payers || []).push({name: trip.memberNames[0], amount: 0})" class="mt-2 text-[10px] font-bold text-sageDeep flex items-center gap-1"><i data-lucide="plus" class="w-3 h-3"></i>新增多位付款人</button>
+              </div>
+
+              <div class="border-t border-line pt-3 mt-2">
+                <label class="block text-xs font-bold text-sageDeep mb-2">分帳方式 (這筆錢是誰該付的？)</label>
+                <select v-model="expenseForm.splitType" class="w-full h-10 rounded-xl bg-fog border border-line px-2 text-xs mb-2">
+                  <option value="equal">所有人平分</option>
+                  <option value="exact">自行輸入應付金額</option>
+                  <option value="ratio">依比例分攤</option>
+                </select>
+                <div v-for="(split, idx) in (expenseForm.splits || [])" :key="'s'+idx" class="flex gap-2 mt-1 items-center">
+                  <span class="w-1/3 text-xs font-semibold pl-1">{{ split.name }}</span>
+                  <input v-if="expenseForm.splitType === 'exact'" v-model.number="split.value" type="number" class="w-2/3 h-10 rounded-xl bg-fog border border-line px-2 text-xs" placeholder="輸入該付金額">
+                  <input v-else-if="expenseForm.splitType === 'ratio'" v-model.number="split.value" type="number" class="w-2/3 h-10 rounded-xl bg-fog border border-line px-2 text-xs" placeholder="輸入比例 (例如 1)">
+                  <span v-else class="text-xs text-ink/50 w-2/3 pl-2">系統自動平分</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="flex gap-3 pt-1">
+              <button v-if="expenseForm.id" type="button" @click="deleteExpense" class="h-12 w-12 rounded-2xl border border-red-200 text-red-500 grid place-items-center"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+              <button type="submit" class="h-12 flex-1 rounded-2xl bg-sageDeep text-white font-semibold">儲存支出與分帳</button>
             </div>
           </form>
         </div>
@@ -456,28 +594,36 @@
       <div v-if="modal === 'trip'" class="fixed inset-0 z-[1000] bg-ink/35 flex items-end justify-center" @click.self="closeModal">
         <div class="modal-card w-full max-w-[440px] max-h-[92vh] overflow-y-auto rounded-t-[30px] bg-fog p-5 pb-8 shadow-float" role="dialog" aria-modal="true" aria-label="旅程設定">
           <div class="flex items-center justify-between">
-            <h2 class="text-xl font-bold text-ink">旅程設定</h2>
-            <button @click="closeModal" class="w-9 h-9 rounded-xl bg-white border border-line grid place-items-center text-ink"><i data-lucide="x" class="w-4 h-4"></i></button>
+            <div>
+              <p class="text-[10px] tracking-widest text-sageDeep font-bold">TRIP SETTINGS</p>
+              <h2 class="text-xl font-bold">旅程設定</h2>
+            </div>
+            <button @click="closeModal" class="w-9 h-9 rounded-xl bg-white grid place-items-center"><i data-lucide="x" class="w-4 h-4"></i></button>
           </div>
           <form @submit.prevent="saveTrip" class="mt-5 space-y-4">
-            <label class="block text-xs font-semibold text-ink">旅程名稱
+            <label class="block text-xs font-semibold">旅程名稱
               <input v-model.trim="tripForm.title" type="text" required class="mt-1.5 w-full h-12 rounded-2xl bg-white border border-line px-4 font-normal">
             </label>
-            <label class="block text-xs font-semibold text-ink">城市
+            <label class="block text-xs font-semibold">目的地城市 (英文)
               <input v-model.trim="tripForm.city" type="text" required class="mt-1.5 w-full h-12 rounded-2xl bg-white border border-line px-4 font-normal uppercase">
             </label>
             <div class="grid grid-cols-2 gap-3">
-              <label class="text-xs font-semibold text-ink">出發日
+              <label class="text-xs font-semibold">出發日
                 <input v-model="tripForm.startDate" type="date" required class="mt-1.5 w-full h-12 rounded-2xl bg-white border border-line px-3 font-normal">
               </label>
-              <label class="text-xs font-semibold text-ink">回程日
+              <label class="text-xs font-semibold">回程日
                 <input v-model="tripForm.endDate" type="date" required class="mt-1.5 w-full h-12 rounded-2xl bg-white border border-line px-3 font-normal">
               </label>
             </div>
-            <label class="block text-xs font-semibold text-ink">總預算 (TWD)
+            <label class="block text-xs font-semibold">旅行總預算（TWD）
               <input v-model.number="tripForm.budget" type="number" min="0" required class="mt-1.5 w-full h-12 rounded-2xl bg-white border border-line px-4 font-normal">
             </label>
-            <button type="submit" class="h-12 w-full rounded-2xl bg-sageDeep text-white font-semibold shadow-card">儲存設定</button>
+            <label class="block text-xs font-semibold">旅伴名稱 (請用逗號分隔)
+              <input v-model.trim="tripForm.memberNamesText" class="mt-1.5 w-full h-12 rounded-2xl bg-white border border-line px-4 font-normal" placeholder="例如：我, 旅伴A">
+            </label>
+            <div class="flex gap-3 pt-2">
+              <button type="submit" class="h-12 flex-1 rounded-2xl bg-sageDeep text-white font-semibold">套用設定</button>
+            </div>
           </form>
         </div>
       </div>
@@ -488,12 +634,12 @@
       <div v-if="modal === 'font'" class="fixed inset-0 z-[1000] bg-ink/35 flex items-end justify-center" @click.self="closeModal">
         <div class="modal-card w-full max-w-[440px] rounded-t-[30px] bg-fog p-5 pb-8 shadow-float" role="dialog" aria-modal="true" aria-label="字體大小">
           <div class="flex items-center justify-between mb-4">
-            <h2 class="text-xl font-bold text-ink">調整文字大小</h2>
-            <button @click="closeModal" class="w-9 h-9 rounded-xl bg-white border border-line grid place-items-center text-ink"><i data-lucide="x" class="w-4 h-4"></i></button>
+            <h2 class="text-xl font-bold">調整文字大小</h2>
+            <button @click="closeModal" class="w-9 h-9 rounded-xl bg-white grid place-items-center"><i data-lucide="x" class="w-4 h-4"></i></button>
           </div>
           <div class="space-y-3">
             <button v-for="opt in fontOptions" :key="opt.id" @click="fontSize = opt.id; closeModal()" class="w-full p-4 rounded-2xl border text-left flex justify-between items-center transition" :class="fontSize === opt.id ? 'border-sageDeep bg-mint/50 font-bold' : 'border-line bg-white'">
-              <span :class="opt.id === 'large' ? 'text-lg' : (opt.id === 'xlarge' ? 'text-xl' : 'text-base')">{{ opt.label }} ({{ opt.note }})</span>
+              <span :style="{ fontSize: opt.preview }">{{ opt.label }} ({{ opt.note }})</span>
               <span v-if="fontSize === opt.id" class="text-sageDeep font-bold">✓</span>
             </button>
           </div>
@@ -538,8 +684,8 @@
             memberNames: ['我', '旅伴']
           },
           plans: [
-            { id: uid(), date: '2026-08-13', time: '10:00', title: '搭機出發至仁川機場', category: '交通', location: '桃園機場 / 仁川機場', note: '領取事先預訂的網卡與T-money卡', transport: '飛行', order: 0 },
-            { id: uid(), date: '2026-08-13', time: '15:00', title: '飯店 Check-in 與休息', category: '住宿', location: '弘大商圈住宿', note: '整理行李', transport: '地鐵', order: 1 }
+            { id: uid(), date: '2026-08-13', time: '14:00', title: '台灣機場T2會合', category: '交通', place: '桃園機場T2', note: '✈️ 去程航班 OZ714', transport: 'flight', order: 0 },
+            { id: uid(), date: '2026-08-13', time: '15:00', title: '入住飯店', category: '住宿', place: '弘大商圈', note: '寄放行李', transport: 'subway', order: 1 }
           ],
           expenses: []
         };
