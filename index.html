@@ -56,9 +56,14 @@
     button, input, select, textarea { font: inherit; outline: none; }
     button { cursor: pointer; }
 
+    :root {
+      --font-scale: 1;
+    }
+
     .app-shell {
       width: min(100%, 440px); min-height: 100vh; margin-inline: auto;
       background: #fbfcf9; position: relative; overflow-x: hidden;
+      font-size: calc(16px * var(--font-scale));
     }
     @media (min-width: 600px) {
       body { padding: 24px 0; }
@@ -81,9 +86,10 @@
     .tab-fade-enter-from, .tab-fade-leave-to { opacity: 0; transform: translateY(5px); }
     .safe-bottom { padding-bottom: max(104px, calc(88px + env(safe-area-inset-bottom))); }
     
-    /* 字體大小動態調整 */
-    .font-large { font-size: 1.1rem; }
-    .font-xlarge { font-size: 1.25rem; }
+    /* 動態字體 CSS */
+    .font-standard { --font-scale: 1; }
+    .font-large { --font-scale: 1.1; }
+    .font-xlarge { --font-scale: 1.25; }
 
     .timeline-line::before {
       content: ""; position: absolute; left: 18px; top: 36px; bottom: -18px; width: 1.5px; background: #eaf0ec;
@@ -103,13 +109,16 @@
   <div id="app" v-cloak class="app-shell" :class="['font-' + fontSize]">
     <main class="safe-bottom">
       
-      <!-- 主視覺 Header 與卡片 (對應截圖排版) -->
+      <!-- 主視覺 Header -->
       <header class="px-5 pt-5 pb-3">
         <div class="flex items-center justify-between">
           <div class="min-w-0 flex-1">
             <p class="text-[11px] font-bold tracking-[.18em] text-sageDeep uppercase">MY TRAVEL JOURNAL</p>
             <h1 class="mt-1 text-[21px] leading-tight font-bold tracking-[-.04em] truncate">{{ trip.title }}</h1>
           </div>
+          <button @click="openTripSettings" class="ml-2 w-10 h-10 rounded-2xl bg-white shadow-card grid place-items-center text-sageDeep" aria-label="旅程設定">
+            <i data-lucide="settings-2" class="w-[18px] h-[18px]"></i>
+          </button>
           <button @click="openShareModal" class="ml-2 w-10 h-10 rounded-2xl bg-white shadow-card grid place-items-center text-[#7b6aa6]" aria-label="分享與共編">
             <i data-lucide="share-2" class="w-[18px] h-[18px]"></i>
           </button>
@@ -142,10 +151,8 @@
         </div>
       </header>
 
-      <!-- 完美對齊邊界的日期選擇列 -->
-     <div
-    v-if="activeTab === 'schedule'"
-    class="px-5 mt-2">
+      <!-- 完美對齊邊界的日期選擇列：僅在行程頁面 (activeTab === 'schedule') 顯示 -->
+      <div v-if="activeTab === 'schedule'" class="px-5 mt-2">
         <div class="grid grid-flow-col auto-cols-fr gap-2 pb-2">
           <button
             v-for="(day, index) in tripDays"
@@ -164,8 +171,7 @@
       <transition name="tab-fade" mode="out-in">
         
         <!-- ==================== 1. 今日 (Today) ==================== -->
-        <section v-if="currentTab === 'today'" key="today" class="px-5 mt-3 space-y-5 pb-10">
-          <!-- 上方標題與定位圖示 -->
+        <section v-if="activeTab === 'today'" key="today" class="px-5 mt-3 space-y-5 pb-10">
           <div class="flex items-center justify-between border-b border-line pb-3">
             <div class="flex items-center gap-1.5 font-bold text-ink text-lg tracking-wider">
               <i data-lucide="compass" class="h-5 w-5 text-sageDeep"></i>
@@ -198,7 +204,7 @@
             </div>
           </div>
 
-          <!-- 出遊安心卡 (獨立卡片) -->
+          <!-- 出遊安心卡 -->
           <article class="rounded-[24px] bg-white border border-line p-5 shadow-card">
             <h2 class="flex items-center gap-2 text-lg font-bold text-ink mb-4">
               <span class="grid h-8 w-8 place-items-center rounded-xl bg-mint text-sageDeep"><i data-lucide="shield-check" class="w-4.5 h-4.5"></i></span>
@@ -242,22 +248,22 @@
             </div>
           </article>
 
-          <!-- 今日行程摘要 -->
+          <!-- 今日行程摘要 (永遠只顯示今日資料 todayPlans) -->
           <section>
             <div class="mb-4 flex items-center justify-between">
               <div>
-                <p class="text-xs text-ink/45 font-bold uppercase">{{ selectedDayName }}</p>
+                <p class="text-xs text-ink/45 font-bold uppercase">TODAY</p>
                 <h2 class="text-xl font-bold tracking-[-.03em] text-ink">今天的行程</h2>
               </div>
-              <button @click="activeTab = 'schedule'" class="text-xs font-bold text-sageDeep flex items-center gap-1 bg-mint px-3 py-1.5 rounded-full">管理行程 <i data-lucide="chevron-right" class="w-3 h-3"></i></button>
+              <button @click="switchTab('schedule')" class="text-xs font-bold text-sageDeep flex items-center gap-1 bg-mint px-3 py-1.5 rounded-full">管理行程 <i data-lucide="chevron-right" class="w-3 h-3"></i></button>
             </div>
 
-            <div v-if="!selectedPlans.length" class="rounded-[24px] border border-dashed border-sage bg-white/70 px-5 py-8 text-center">
-              <p class="text-sm font-bold text-ink">這一天還沒有行程</p>
+            <div v-if="!todayPlans.length" class="rounded-[24px] border border-dashed border-sage bg-white/70 px-5 py-8 text-center">
+              <p class="text-sm font-bold text-ink">今天還沒有行程安排</p>
             </div>
 
-            <div class="space-y-3">
-              <article v-for="item in selectedPlans" :key="item.id" class="paper-card rounded-[22px] p-4 shadow-sm flex items-start gap-3.5">
+            <div v-else class="space-y-3">
+              <article v-for="item in todayPlans" :key="item.id" class="paper-card rounded-[22px] p-4 shadow-sm flex items-start gap-3.5">
                 <div class="bg-mint text-sageDeep px-2.5 py-2 rounded-xl text-xs font-black text-center min-w-[54px] shrink-0">
                   {{ item.time }}
                 </div>
@@ -283,6 +289,54 @@
               <i data-lucide="plus" class="w-4 h-4"></i>新增
             </button>
           </div>
+
+          <!-- 安心回飯店卡片 -->
+          <article class="rounded-[24px] bg-white border border-line p-5 shadow-card">
+            <h2 class="flex items-center gap-2 text-lg font-bold text-ink mb-3">
+              <span class="grid h-8 w-8 place-items-center rounded-xl bg-mint text-sageDeep"><i data-lucide="home" class="w-4.5 h-4.5"></i></span>
+              安心回飯店 (住宿資訊)
+            </h2>
+            <div class="space-y-3 text-xs">
+              <div v-for="hotel in hotels" :key="hotel.name" class="p-3.5 rounded-2xl bg-fog border border-line space-y-1">
+                <a :href="hotel.url" target="_blank" rel="noopener" class="font-bold text-sm text-sageDeep underline decoration-sage underline-offset-2 block">
+                  {{ hotel.name }} <i data-lucide="external-link" class="w-3 h-3 inline-block"></i>
+                </a>
+                <p class="font-semibold text-ink/80">{{ hotel.krName }}</p>
+                <p class="text-ink/60 font-medium">📍 {{ hotel.address }}</p>
+              </div>
+            </div>
+          </article>
+
+          <!-- 出遊安心卡 -->
+          <article class="rounded-[24px] bg-white border border-line p-5 shadow-card">
+            <h2 class="flex items-center gap-2 text-lg font-bold text-ink mb-3">
+              <span class="grid h-8 w-8 place-items-center rounded-xl bg-mint text-sageDeep"><i data-lucide="shield-check" class="w-4.5 h-4.5"></i></span>
+              出遊安心卡
+            </h2>
+            <div class="space-y-3 text-xs">
+              <div class="rounded-[20px] bg-mint/40 p-3.5 border border-line">
+                <p class="font-bold text-sageDeep mb-1.5 uppercase tracking-wider">救助相關專線</p>
+                <ul class="space-y-1 font-semibold text-ink">
+                  <li>駐韓台北代表部：<a href="tel:+821090802761" class="text-sageDeep underline">82-10-9080-2761</a></li>
+                  <li>駐釜山辦事處：<a href="tel:+821045377961" class="text-sageDeep underline">+82-10-4537-7961</a></li>
+                  <li>外交部緊急中心：<a href="tel:0800085095" class="text-sageDeep underline">0800-085-095</a></li>
+                </ul>
+              </div>
+              <div class="grid grid-cols-2 gap-2">
+                <div class="rounded-xl bg-fog p-3 border border-line">
+                  <p class="font-bold text-ink/50 mb-1">韓國當地緊急</p>
+                  <p>報警：<a href="tel:112" class="underline">112</a></p>
+                  <p>網路犯罪：<a href="tel:118" class="underline">118</a></p>
+                  <p>火災急救：<a href="tel:119" class="underline">119</a></p>
+                </div>
+                <div class="rounded-xl bg-fog p-3 border border-line">
+                  <p class="font-bold text-ink/50 mb-1">緊急聯絡人</p>
+                  <p>張瓊淑<br><a href="tel:0930655555" class="text-sageDeep underline">0930655555</a></p>
+                  <p class="mt-1 pt-1 border-t border-line">潘林妹<br><a href="tel:0910286490" class="text-sageDeep underline">0910286490</a></p>
+                </div>
+              </div>
+            </div>
+          </article>
 
           <div v-if="selectedPlans.length" class="space-y-3">
             <template v-for="(plan, index) in selectedPlans" :key="plan.id">
@@ -323,8 +377,8 @@
                   </div>
                   <div class="flex items-center gap-1 shrink-0">
                     <div class="flex flex-col">
-                      <button @click="movePlan(plan.id, -1)" :disabled="index === 0" class="w-6 h-5 rounded bg-fog grid place-items-center text-ink/40 disabled:opacity-20"><i data-lucide="chevron-up" class="w-3 h-3"></i></button>
-                      <button @click="movePlan(plan.id, 1)" :disabled="index === selectedPlans.length - 1" class="w-6 h-5 rounded bg-fog grid place-items-center text-ink/40 disabled:opacity-20"><i data-lucide="chevron-down" class="w-3 h-3"></i></button>
+                      <button @click="moveSchedule(index, -1)" :disabled="index === 0" class="w-6 h-5 rounded bg-fog grid place-items-center text-ink/40 disabled:opacity-20"><i data-lucide="chevron-up" class="w-3 h-3"></i></button>
+                      <button @click="moveSchedule(index, 1)" :disabled="index === selectedPlans.length - 1" class="w-6 h-5 rounded bg-fog grid place-items-center text-ink/40 disabled:opacity-20"><i data-lucide="chevron-down" class="w-3 h-3"></i></button>
                     </div>
                     <button @click="openPlanForm(plan)" class="w-8 h-10 rounded-xl bg-fog grid place-items-center text-ink/50 hover:text-sageDeep"><i data-lucide="edit-2" class="w-4 h-4"></i></button>
                   </div>
@@ -333,7 +387,7 @@
                 
                 <div class="mt-3 pt-3 border-t border-line flex items-center justify-end">
                   <button class="text-xs font-bold text-sageDeep bg-mint px-3 py-1.5 rounded-xl flex items-center gap-1.5 hover:bg-sageDeep hover:text-white transition shadow-2xs" @click="openNavigation(plan)">
-                    <i data-lucide="navigation" class="w-3 h-3"></i> 導航 ({{ plan.transport === '地鐵' ? '韓巢' : 'Naver' }})
+                    <i data-lucide="navigation" class="w-3 h-3"></i> 導航 ({{ plan.transport === 'subway' ? '韓巢' : 'Naver' }})
                   </button>
                 </div>
               </article>
@@ -435,7 +489,7 @@
       </transition>
     </main>
 
-    <!-- 底部導覽列 (4個分頁：今日、行程、記帳、韓文，其中韓文圖示設計為「ㅎㄱㅇ」) -->
+    <!-- 底部導覽列 -->
     <nav class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[440px] glass border-t border-white/80 z-[500]" :style="{ paddingBottom: 'env(safe-area-inset-bottom)' }" aria-label="主要選單">
       <div class="h-[78px] px-5 flex items-center justify-between">
         <button v-for="tab in tabs" :key="tab.value" @click="switchTab(tab.value)" class="relative w-[72px] h-14 rounded-[19px] flex flex-col items-center justify-center gap-1 transition-all" :class="activeTab === tab.value ? 'text-sageDeep bg-mint/70' : 'text-ink/35'">
@@ -450,7 +504,7 @@
       </div>
     </nav>
 
-    <!-- Plan modal -->
+    <!-- Plan Modal -->
     <transition name="modal">
       <div v-if="modal === 'plan'" class="fixed inset-0 z-[1000] bg-ink/35 flex items-end justify-center" @click.self="closeModal">
         <div class="modal-card w-full max-w-[440px] max-h-[90vh] overflow-y-auto rounded-t-[30px] bg-fog p-5 pb-8 shadow-float" role="dialog" aria-modal="true" aria-label="編輯行程">
@@ -502,7 +556,7 @@
       </div>
     </transition>
 
-    <!-- Expense modal -->
+    <!-- Expense Modal -->
     <transition name="modal">
       <div v-if="modal === 'expense'" class="fixed inset-0 z-[1000] bg-ink/35 flex items-end justify-center" @click.self="closeModal">
         <div class="modal-card w-full max-w-[440px] max-h-[90vh] overflow-y-auto rounded-t-[30px] bg-fog p-5 pb-8 shadow-float" role="dialog" aria-modal="true" aria-label="編輯支出">
@@ -588,7 +642,7 @@
       </div>
     </transition>
 
-    <!-- Trip settings modal -->
+    <!-- Trip Settings Modal -->
     <transition name="modal">
       <div v-if="modal === 'trip'" class="fixed inset-0 z-[1000] bg-ink/35 flex items-end justify-center" @click.self="closeModal">
         <div class="modal-card w-full max-w-[440px] max-h-[92vh] overflow-y-auto rounded-t-[30px] bg-fog p-5 pb-8 shadow-float" role="dialog" aria-modal="true" aria-label="旅程設定">
@@ -628,7 +682,7 @@
       </div>
     </transition>
 
-    <!-- Font modal -->
+    <!-- Font Modal -->
     <transition name="modal">
       <div v-if="modal === 'font'" class="fixed inset-0 z-[1000] bg-ink/35 flex items-end justify-center" @click.self="closeModal">
         <div class="modal-card w-full max-w-[440px] rounded-t-[30px] bg-fog p-5 pb-8 shadow-float" role="dialog" aria-modal="true" aria-label="字體大小">
@@ -637,7 +691,7 @@
             <button @click="closeModal" class="w-9 h-9 rounded-xl bg-white grid place-items-center"><i data-lucide="x" class="w-4 h-4"></i></button>
           </div>
           <div class="space-y-3">
-            <button v-for="opt in fontOptions" :key="opt.id" @click="fontSize = opt.id; closeModal()" class="w-full p-4 rounded-2xl border text-left flex justify-between items-center transition" :class="fontSize === opt.id ? 'border-sageDeep bg-mint/50 font-bold' : 'border-line bg-white'">
+            <button v-for="opt in fontOptions" :key="opt.id" @click="setFontSize(opt.id)" class="w-full p-4 rounded-2xl border text-left flex justify-between items-center transition" :class="fontSize === opt.id ? 'border-sageDeep bg-mint/50 font-bold' : 'border-line bg-white'">
               <span :style="{ fontSize: opt.preview }">{{ opt.label }} ({{ opt.note }})</span>
               <span v-if="fontSize === opt.id" class="text-sageDeep font-bold">✓</span>
             </button>
@@ -661,6 +715,7 @@
       setup() {
         const STORAGE_KEY = 'travel-journal-seoul-v6';
         const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+        
         const parseLocalDate = value => {
           if (!value) return new Date();
           const parts = String(value).split('-').map(Number);
@@ -683,8 +738,8 @@
             memberNames: ['我', '旅伴']
           },
           plans: [
-            { id: uid(), date: '2026-08-13', time: '14:00', title: '台灣機場T2會合', category: '交通', place: '桃園機場T2', note: '✈️ 去程航班 OZ714', transport: 'flight', order: 0 },
-            { id: uid(), date: '2026-08-13', time: '15:00', title: '入住飯店', category: '住宿', place: '弘大商圈', note: '寄放行李', transport: 'subway', order: 1 }
+            { id: uid(), date: '2026-08-13', time: '14:00', title: '台灣機場T2會合', category: '交通', location: '桃園機場T2', note: '✈️ 去程航班 OZ714', transport: 'flight', order: 0 },
+            { id: uid(), date: '2026-08-13', time: '15:00', title: '入住飯店', category: '住宿', location: '弘大商圈', note: '寄放行李', transport: 'subway', order: 1 }
           ],
           expenses: []
         };
@@ -700,14 +755,20 @@
         const plans = ref(Array.isArray(loaded.plans) ? loaded.plans : defaultState.plans);
         const expenses = ref(Array.isArray(loaded.expenses) ? loaded.expenses : defaultState.expenses);
 
+        const fontOptions = [
+          { id: "standard", label: "標準", note: "100%", preview: "16px" },
+          { id: "large", label: "大", note: "110%", preview: "18px" },
+          { id: "xlarge", label: "超大", note: "125%", preview: "20px" }
+        ];
+
+        const fontSize = ref('standard');
         const activeTab = ref('today');
         const selectedDate = ref(trip.value.startDate);
         const selectedDay = ref(0);
         const modal = ref('');
         const toast = ref('');
-        const fontSize = ref('standard');
-        const speakerGender = ref('general');
-        const thaiFilter = ref('全部');
+        const honorificMode = ref('general');
+        const koreanFilter = ref('全部');
         const expenseFilter = ref('all');
 
         const planForm = ref({});
@@ -721,12 +782,17 @@
           { value: 'language', label: '韓文', icon: 'languages' }
         ];
 
+        const hotels = ref([
+          { name: 'Daol Guesthouse', krName: '다올 게스트하우스', address: '首爾麻浦區 (弘大附近)', url: 'https://naver.me/5WOwyWHU' },
+          { name: 'Jamsil Stay Hotel', krName: '잠실 스테이 호텔', address: '首爾松坡區三田洞', url: 'https://naver.me/FZ2Z5o85' }
+        ]);
+
         const planCategories = ['景點', '用餐', '購物', '交通', '住宿', '放鬆', '票券', '其他'];
         const expenseCategories = ['交通', '住宿', '美食', '購物', '票券', '其他'];
         const currencies = ['KRW', 'TWD', 'THB', 'JPY', 'USD'];
-        const thaiCategories = ['全部', '打招呼', '實用', '交通', '購物', '餐廳', '追星'];
+        const koreanCategories = ["全部", "打招呼", "實用", "交通", "購物", "餐廳", "追星"];
 
-        const thaiPhrases = [
+        const koreanPhrases = [
           { id: 'k1', category: '打招呼', chinese: '你好', general: '안녕하세요', highest: '안녕하십니까', pronounceGeneral: '安妞哈些優', pronounceHighest: '安妞哈西咪嘎', tip: '見面隨時可用' },
           { id: 'k2', category: '打招呼', chinese: '謝謝', general: '고마워요', highest: '감사합니다', pronounceGeneral: '口媽窩優', pronounceHighest: '勘撒哈咪搭', tip: '接受服務後最常用' },
           { id: 'k3', category: '打招呼', chinese: '不好意思/對不起', general: '미안해요', highest: '죄송합니다', pronounceGeneral: '咪安嘿優', pronounceHighest: '罪松哈咪搭', tip: '撞到人或表達歉意' },
@@ -756,7 +822,19 @@
         }));
 
         watch([trip, plans, expenses], saveLocal, { deep: true });
-        watch([activeTab, modal], () => nextTick(() => window.lucide && window.lucide.createIcons()));
+        
+        // 切換 Tab 與 Modal 時更新 Lucide Icons
+        watch([activeTab, modal], () => {
+          nextTick(() => window.lucide && window.lucide.createIcons());
+        });
+
+        // setFontSize 重新設計
+        function setFontSize(size) {
+          fontSize.value = size;
+          localStorage.setItem("fontSize", size);
+          closeModal();
+          showToast('字體大小已切換');
+        }
 
         const tripDays = computed(() => {
           const start = parseLocalDate(trip.value.startDate);
@@ -781,6 +859,14 @@
             ? Number(a.order) - Number(b.order)
             : String(a.time || '').localeCompare(String(b.time || ''))));
 
+        // 今日分頁固定顯示今天的資料
+        const todayPlans = computed(() => {
+          const todayIso = formatISO(new Date());
+          return plans.value
+            .filter(p => p.date === todayIso)
+            .sort((a, b) => String(a.time || '').localeCompare(String(b.time || '')));
+        });
+
         const activeDay = computed(() => tripDays.value[selectedDay.value] || { date: selectedDate.value, items: selectedPlans.value });
         const selectedDayName = computed(() => {
           const index = selectedDay.value;
@@ -791,9 +877,7 @@
         const totalSpentTwd = computed(() => expenses.value.reduce((sum, item) => sum + Number(item.amount || 0) * Number(item.rate || 1), 0));
         const budgetPercent = computed(() => Math.min(100, trip.value.budget ? (totalSpentTwd.value / trip.value.budget) * 100 : 0));
         const filteredExpenses = computed(() => expenseFilter.value === 'all' ? expenses.value : expenses.value.filter(e => e.category === expenseFilter.value));
-        const filteredKoreanPhrases = computed(() => thaiFilter.value === '全部' ? thaiPhrases : thaiPhrases.filter(p => p.category === thaiFilter.value));
-
-        const weatherForSelected = computed(() => ({ icon: '🌤️', label: '首爾多雲時晴', temp: '29°C' }));
+        const filteredKoreanPhrases = computed(() => koreanFilter.value === '全部' ? koreanPhrases : koreanPhrases.filter(p => p.category === koreanFilter.value));
 
         const settlementBalances = computed(() => {
           let balances = {};
@@ -857,29 +941,45 @@
           }[category] || { icon: '✦', bg: 'bg-mint', pill: 'bg-mint text-sageDeep' };
         }
 
-        function transportIcon(t) { return { '飛行': '✈️', '步行': '🚶', '大眾運輸': '🚆', '計程車': '🚕', '地鐵': '🚇' }[t] || '🚶'; }
-        function transportLabel(t) { return t || '步行'; }
+        // 交通方式英字對齊
+        function transportIcon(t) { return { flight: 'plane', walk: 'footprints', taxi: 'car', subway: 'train-front' }[t] || 'footprints'; }
+        function transportLabel(t) { return { flight: '飛行', walk: '步行', taxi: '計程車', subway: '地鐵' }[t] || '步行'; }
         function paymentLabel(p) { return { cash: '現金', credit: '信用卡', electronic: '電子票證' }[p] || p; }
 
         function openNavigation(plan) {
-          if (plan.transport === '地鐵' || plan.transport === 'subway') {
+          if (plan.transport === 'subway') {
             window.open('https://map.hanchao.com/subway', '_blank', 'noopener');
           } else {
             window.open(`https://map.naver.com/v5/search/${encodeURIComponent(plan.title || '')}`, '_blank', 'noopener');
           }
         }
 
+        // 重構 moveSchedule 排序功能
         function moveSchedule(index, direction) {
           const items = selectedPlans.value;
           const targetIndex = index + direction;
           if (targetIndex < 0 || targetIndex >= items.length) return;
-          [items[index].order, items[targetIndex].order] = [targetIndex, index];
+          
+          const currentPlan = items[index];
+          const targetPlan = items[targetIndex];
+          
+          const currentRealIdx = plans.value.findIndex(p => p.id === currentPlan.id);
+          const targetRealIdx = plans.value.findIndex(p => p.id === targetPlan.id);
+
+          if (currentRealIdx !== -1 && targetRealIdx !== -1) {
+            const tempOrder = plans.value[currentRealIdx].order !== undefined ? plans.value[currentRealIdx].order : index;
+            plans.value[currentRealIdx].order = plans.value[targetRealIdx].order !== undefined ? plans.value[targetRealIdx].order : targetIndex;
+            plans.value[targetRealIdx].order = tempOrder;
+          }
+
           saveLocal();
+          nextTick(() => window.lucide && window.lucide.createIcons());
         }
 
         function openPlanForm(plan = null) {
-          planForm.value = plan ? { ...plan } : { id: '', date: selectedDate.value, time: '10:00', title: '', category: '景點', transport: '地鐵', url: '', note: '' };
+          planForm.value = plan ? { ...plan } : { id: '', date: selectedDate.value, time: '10:00', title: '', category: '景點', transport: 'subway', url: '', note: '' };
           modal.value = 'plan';
+          nextTick(() => window.lucide && window.lucide.createIcons());
         }
         function savePlan() {
           if (planForm.value.id) {
@@ -898,8 +998,9 @@
         }
 
         function openExpenseForm(expense = null) {
-          expenseForm.value = expense ? { ...expense } : { id: '', title: '', amount: null, currency: 'KRW', category: '美食', payment: '現金', date: formatISO(new Date()), rate: 0.024, payers: [{name: trip.value.memberNames[0], amount: ''}], splitType: 'equal', splits: trip.value.memberNames.map(n=>({name:n, value:1})) };
+          expenseForm.value = expense ? { ...expense } : { id: '', title: '', amount: null, currency: 'KRW', category: '美食', payment: 'cash', date: formatISO(new Date()), rate: 0.024, payers: [{name: trip.value.memberNames[0], amount: ''}], splitType: 'equal', splits: trip.value.memberNames.map(n=>({name:n, value:1})) };
           modal.value = 'expense';
+          nextTick(() => window.lucide && window.lucide.createIcons());
         }
         function saveExpense() {
           const clean = { ...expenseForm.value, amount: Number(expenseForm.value.amount) || 0, rate: Number(expenseForm.value.rate) || 0.024 };
@@ -920,19 +1021,34 @@
         }
 
         function openTripSettings() {
-          tripForm.value = { ...trip.value };
+          tripForm.value = { ...trip.value, memberNamesText: (trip.value.memberNames || []).join(', ') };
           modal.value = 'trip';
+          nextTick(() => window.lucide && window.lucide.createIcons());
         }
         function saveTrip() {
-          trip.value = { ...tripForm.value };
+          const names = (tripForm.value.memberNamesText || '').split(/[,，、]/).map(n => n.trim()).filter(Boolean);
+          trip.value = { ...tripForm.value, memberNames: names.length ? names : ['我', '旅伴'] };
           closeModal();
           showToast('旅程設定已更新');
         }
 
-        function openShareModal() { showToast('共編邀請連結已準備就緒'); }
-        function closeModal() { modal.value = ''; }
-        function switchTab(value) { activeTab.value = value; }
-        function setFontSize(s) { fontSize.value = s; closeModal(); }
+        function openShareModal() { 
+          showToast('共編邀請連結已準備就緒'); 
+        }
+        function closeModal() { 
+          modal.value = ''; 
+          nextTick(() => window.lucide && window.lucide.createIcons());
+        }
+        function switchTab(value) { 
+          activeTab.value = value; 
+          nextTick(() => window.lucide && window.lucide.createIcons());
+        }
+        
+        function openModal(name) {
+          modal.value = name;
+          nextTick(() => window.lucide && window.lucide.createIcons());
+        }
+
         function speakKorean(text) {
           if (!('speechSynthesis' in window)) return showToast('不支援語音');
           window.speechSynthesis.cancel();
@@ -942,19 +1058,23 @@
         }
 
         onMounted(() => {
+          const savedFont = localStorage.getItem("fontSize");
+          if (savedFont) {
+            fontSize.value = savedFont;
+          }
           nextTick(() => window.lucide && window.lucide.createIcons());
         });
 
         return {
-          trip, plans, expenses, activeTab, selectedDate, selectedDay, modal, toast, fontSize,
-          speakerGender, thaiFilter, expenseFilter, planForm, expenseForm, tripForm,
-          tabs, planCategories, expenseCategories, currencies, thaiCategories, thaiPhrases,
-          tripDays, selectedPlans, activeDay, selectedDayName, totalPlans, totalSpentTwd, budgetPercent,
-          filteredExpenses, filteredKoreanPhrases, weatherForSelected, settlementMessage,
+          trip, plans, expenses, activeTab, selectedDate, selectedDay, modal, toast, fontSize, fontOptions,
+          honorificMode, koreanFilter, expenseFilter, planForm, expenseForm, tripForm,
+          tabs, planCategories, expenseCategories, currencies, koreanCategories, koreanPhrases, hotels,
+          tripDays, selectedPlans, todayPlans, activeDay, selectedDayName, totalPlans, totalSpentTwd, budgetPercent,
+          filteredExpenses, filteredKoreanPhrases, settlementMessage,
           formatDateRange, shortDate, money, formatNumber, currencySymbol, categoryStyle,
-          transportIcon, transportLabel, paymentLabel, openNavigation, moveSchedule,
+          transportIcon, transportLabel, paymentLabel, openNavigation, moveSchedule, setFontSize, openModal,
           openPlanForm, savePlan, deletePlan, openExpenseForm, saveExpense, deleteExpense,
-          openTripSettings, saveTrip, openShareModal, closeModal, switchTab, setFontSize, speakKorean, showToast
+          openTripSettings, saveTrip, openShareModal, closeModal, switchTab, speakKorean, showToast
         };
       }
     }).mount('#app');
