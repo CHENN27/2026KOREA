@@ -102,7 +102,7 @@
   <div id="app" v-cloak class="app-shell" :class="['font-' + fontSize]">
     <main class="safe-bottom">
       
-      <!-- 主視覺 Header 與卡片 (拿掉左上方上一頁按鈕) -->
+      <!-- 主視覺 Header 與卡片 -->
       <header class="px-5 pt-5 pb-3">
         <div class="flex items-center justify-between">
           <div class="min-w-0 flex-1">
@@ -233,7 +233,7 @@
             </div>
           </article>
 
-          <!-- 出遊安心卡 (行程頁面也保留) -->
+          <!-- 出遊安心卡 -->
           <article class="rounded-[24px] bg-white border border-line p-5 shadow-card">
             <h2 class="flex items-center gap-2 text-lg font-bold text-ink mb-3">
               <span class="grid h-8 w-8 place-items-center rounded-xl bg-mint text-sageDeep"><i data-lucide="shield-check" class="w-4.5 h-4.5"></i></span>
@@ -413,7 +413,7 @@
             <article v-for="phrase in filteredKoreanPhrases" :key="phrase.id" class="bg-white rounded-[22px] p-4 shadow-card border border-line flex items-start justify-between gap-3">
               <div class="min-w-0 flex-1">
                 <span class="inline-block rounded-full bg-mint px-2 py-0.5 text-[9px] font-bold text-sageDeep mb-1">{{ phrase.category }}</span>
-                <p lang="ko" class="mt-1 text-[19px] font-bold text-ink">{{ honorificMode === 'highest' ? phrase.highest : phrase.general }}</p>
+                <p lang="ko" class="text-xl font-bold text-ink">{{ honorificMode === 'highest' ? phrase.highest : phrase.general }}</p>
                 <p class="mt-1 text-sm font-bold text-ink/80">{{ phrase.chinese }}</p>
                 <p class="mt-1 text-[11px] font-semibold text-sageDeep">{{ honorificMode === 'highest' ? phrase.pronounceHighest : phrase.pronounceGeneral }}</p>
                 <p v-if="phrase.tip" class="mt-2 text-[10px] text-ink/60 bg-fog p-2 rounded-xl border border-line">💡 {{ phrase.tip }}</p>
@@ -425,11 +425,16 @@
       </transition>
     </main>
 
-    <!-- 底部導覽列 (4個分頁：今日、行程、記帳、韓文) -->
+    <!-- 底部導覽列 (4個分頁：今日、行程、記帳、韓文，其中韓文圖示設計為「ㅎㄱㅇ」) -->
     <nav class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[440px] glass border-t border-white/80 z-[500]" :style="{ paddingBottom: 'env(safe-area-inset-bottom)' }" aria-label="主要選單">
       <div class="h-[78px] px-5 flex items-center justify-between">
         <button v-for="tab in tabs" :key="tab.value" @click="switchTab(tab.value)" class="relative w-[72px] h-14 rounded-[19px] flex flex-col items-center justify-center gap-1 transition-all" :class="activeTab === tab.value ? 'text-sageDeep bg-mint/70' : 'text-ink/35'">
-          <i :data-lucide="tab.icon" class="w-[20px] h-[20px]"></i>
+          <template v-if="tab.value === 'language'">
+            <span class="text-sm font-black tracking-tighter">ㅎㄱㅇ</span>
+          </template>
+          <template v-else>
+            <i :data-lucide="tab.icon" class="w-[20px] h-[20px]"></i>
+          </template>
           <span class="text-[10px] font-semibold">{{ tab.label }}</span>
         </button>
       </div>
@@ -644,7 +649,7 @@
 
     createApp({
       setup() {
-        const STORAGE_KEY = 'travel-journal-seoul-v7';
+        const STORAGE_KEY = 'travel-journal-seoul-v8';
         const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
         const parseLocalDate = value => {
           if (!value) return new Date();
@@ -669,7 +674,7 @@
           },
           plans: [
             { id: uid(), date: '2026-08-13', time: '14:00', title: '台灣機場T2會合', category: '交通', place: '桃園機場T2', note: '✈️ 去程航班 OZ714', transport: 'flight', order: 0 },
-            { id: uid(), date: '2026-08-13', time: '15:00', title: '入住飯店', category: '住宿', place: '弘大商圈', note: '寄放行李', transport: 'subway', order: 1 }
+            { id: uid(), date: '2026-08-13', time: '15:00', title: '入住 Daol Guesthouse', category: '住宿', place: '弘大', note: '寄放行李', transport: 'subway', order: 1 }
           ],
           expenses: []
         };
@@ -706,7 +711,7 @@
           { value: 'language', label: '韓文', icon: 'languages' }
         ];
 
-        // 住宿資料 (對應使用者提供的 Naver 網址)
+        // 飯店資料
         const hotels = ref([
           { name: 'Daol Guesthouse', krName: '다올 게스트하우스', address: '首爾麻浦區 (弘大附近)', url: 'https://naver.me/5WOwyWHU' },
           { name: 'Jamsil Stay Hotel', krName: '잠실 스테이 호텔', address: '首爾松坡區三田洞', url: 'https://naver.me/FZ2Z5o85' }
@@ -782,7 +787,9 @@
         const totalSpentTwd = computed(() => expenses.value.reduce((sum, item) => sum + Number(item.amount || 0) * Number(item.rate || 1), 0));
         const budgetPercent = computed(() => Math.min(100, trip.value.budget ? (totalSpentTwd.value / trip.value.budget) * 100 : 0));
         const filteredExpenses = computed(() => expenseFilter.value === 'all' ? expenses.value : expenses.value.filter(e => e.category === expenseFilter.value));
-        const filteredKoreanPhrases = computed(() => koreanFilter.value === '全部' ? thaiPhrases : thaiPhrases.filter(p => p.category === koreanFilter.value));
+        const filteredKoreanPhrases = computed(() => koreanFilter.value === '全部' ? koreanPhrases : koreanPhrases.filter(p => p.category === koreanFilter.value));
+
+        const weatherForSelected = ref({ icon: '🌤️', label: '首爾多雲時晴', temp: '29°C' });
 
         const settlementBalances = computed(() => {
           let balances = {};
@@ -937,16 +944,21 @@
         return {
           trip, plans, expenses, activeTab, selectedDate, selectedDay, modal, toast, fontSize,
           speakerGender, thaiFilter, expenseFilter, planForm, expenseForm, tripForm,
-          tabs, planCategories, expenseCategories, currencies, thaiCategories, thaiPhrases, hotels,
+          tabs, planCategories, expenseCategories, currencies, koreanCategories, koreanPhrases, hotels,
           tripDays, selectedPlans, activeDay, selectedDayName, totalPlans, totalSpentTwd, budgetPercent,
-          filteredExpenses, filteredKoreanPhrases, settlementMessage,
+          filteredExpenses, filteredKoreanPhrases, weatherForSelected, settlementMessage,
           formatDateRange, shortDate, money, formatNumber, currencySymbol, categoryStyle,
           transportIcon, transportLabel, paymentLabel, openNavigation, moveSchedule,
           openPlanForm, savePlan, deletePlan, openExpenseForm, saveExpense, deleteExpense,
           openTripSettings, saveTrip, openShareModal, closeModal, switchTab, setFontSize, speakKorean, showToast
         };
       }
-    }).mount('#app');
+    });
+
+    app.config.errorHandler = (err) => {
+      console.error(err);
+    };
+    app.mount("#app");
   </script>
 </body>
 </html>
