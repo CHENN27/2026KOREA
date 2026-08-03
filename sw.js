@@ -1,7 +1,7 @@
-// HAMKKE Service Worker v0.3
+// HAMKKE Service Worker v0.5
 // #19: 離線支援 — 快取頁面與 CDN 資源，確保關鍵資料離線可檢視
 
-const CACHE_NAME = 'hamkke-v4';
+const CACHE_NAME = 'hamkke-v5';
 const PRECACHE_URLS = [
   './',
   './index.html',
