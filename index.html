@@ -622,6 +622,7 @@
                 <label class="text-xs font-semibold">前往方式
                   <select v-model="planForm.transport" class="mt-1.5 w-full h-12 rounded-2xl bg-white border border-line px-3 font-normal">
                     <option value="subway">地鐵</option>
+                    <option value="bus">巴士</option>
                     <option value="taxi">計程車</option>
                     <option value="walk">步行</option>
                     <option value="flight">飛行</option>
@@ -732,12 +733,44 @@
                     <option value="exact">自行輸入應付金額</option>
                     <option value="ratio">依比例分攤</option>
                   </select>
-                  <div v-for="(split, idx) in (expenseForm.splits || [])" :key="'s'+idx" class="flex gap-2 mt-1 items-center">
-                    <span class="w-1/3 text-xs font-semibold pl-1">{{ displayMemberName(split.name) }}</span>
-                    <input v-if="expenseForm.splitType === 'exact'" v-model.number="split.value" type="number" class="w-2/3 h-10 rounded-xl bg-fog border border-line px-2 text-xs" :placeholder="'應付金額 (' + expenseForm.currency + ')'">
-                    <input v-else-if="expenseForm.splitType === 'ratio'" v-model.number="split.value" type="number" class="w-2/3 h-10 rounded-xl bg-fog border border-line px-2 text-xs" placeholder="輸入比例 (例如 1)">
-                    <span v-else class="text-xs text-ink/50 w-2/3 pl-2">系統自動平分</span>
+
+                  <!-- 依比例：兩人時顯示可拖曳 slider -->
+                  <div v-if="expenseForm.splitType === 'ratio' && (expenseForm.splits || []).length === 2" class="mt-2">
+                    <div class="flex items-center justify-between mb-1.5">
+                      <span class="text-xs font-bold text-ink">{{ displayMemberName(expenseForm.splits[0].name) }}</span>
+                      <span class="text-xs font-bold text-ink">{{ displayMemberName(expenseForm.splits[1].name) }}</span>
+                    </div>
+                    <div class="relative h-10 flex items-center" @mousedown="startFormSplitDrag($event)" @touchstart.prevent="startFormSplitDrag($event)">
+                      <div class="w-full h-3 rounded-full overflow-hidden bg-[#eaf0ec]">
+                        <div class="h-full rounded-full bg-gradient-to-r from-sageDeep to-[#8ec5b5] transition-all duration-75" :style="{ width: formSplitPercent + '%' }"></div>
+                      </div>
+                      <div class="absolute top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-white border-2 border-sageDeep shadow-card flex items-center justify-center cursor-grab active:cursor-grabbing transition-all duration-75"
+                        :style="{ left: 'calc(' + formSplitPercent + '% - 14px)' }">
+                        <i data-lucide="grip-vertical" class="w-3 h-3 text-sageDeep"></i>
+                      </div>
+                    </div>
+                    <div class="flex items-center justify-between mt-1.5">
+                      <div class="flex items-center gap-1">
+                        <input type="number" min="0" max="100" :value="formSplitPercent" @input="setFormSplitPercent(Math.min(100, Math.max(0, Number($event.target.value) || 0)))" class="w-12 h-8 rounded-lg bg-fog border border-line text-center text-sm font-bold text-sageDeep">
+                        <span class="text-xs text-ink/40">%</span>
+                      </div>
+                      <button type="button" @click="setFormSplitPercent(50)" class="text-[9px] text-ink/40 font-bold hover:text-sageDeep transition">重置 50:50</button>
+                      <div class="flex items-center gap-1">
+                        <input type="number" min="0" max="100" :value="100 - formSplitPercent" @input="setFormSplitPercent(100 - Math.min(100, Math.max(0, Number($event.target.value) || 0)))" class="w-12 h-8 rounded-lg bg-fog border border-line text-center text-sm font-bold text-[#7b6aa6]">
+                        <span class="text-xs text-ink/40">%</span>
+                      </div>
+                    </div>
                   </div>
+
+                  <!-- 非兩人或其他分帳模式：維持原本輸入 -->
+                  <template v-else>
+                    <div v-for="(split, idx) in (expenseForm.splits || [])" :key="'s'+idx" class="flex gap-2 mt-1 items-center">
+                      <span class="w-1/3 text-xs font-semibold pl-1">{{ displayMemberName(split.name) }}</span>
+                      <input v-if="expenseForm.splitType === 'exact'" v-model.number="split.value" type="number" class="w-2/3 h-10 rounded-xl bg-fog border border-line px-2 text-xs" :placeholder="'應付金額 (' + expenseForm.currency + ')'">
+                      <input v-else-if="expenseForm.splitType === 'ratio'" v-model.number="split.value" type="number" class="w-2/3 h-10 rounded-xl bg-fog border border-line px-2 text-xs" placeholder="輸入比例 (例如 1)">
+                      <span v-else class="text-xs text-ink/50 w-2/3 pl-2">系統自動平分</span>
+                    </div>
+                  </template>
                 </div>
               </div>
             </template>
@@ -1383,6 +1416,53 @@
           });
         });
 
+        // 記帳表單內的分帳比例 slider
+        const formSplitPercent = computed(() => {
+          const splits = expenseForm.value.splits;
+          if (!Array.isArray(splits) || splits.length !== 2) return 50;
+          const a = Number(splits[0].value) || 0;
+          const b = Number(splits[1].value) || 0;
+          const total = a + b;
+          if (total === 0) return 50;
+          return Math.round((a / total) * 100);
+        });
+
+        function setFormSplitPercent(pct) {
+          if (!Array.isArray(expenseForm.value.splits) || expenseForm.value.splits.length !== 2) return;
+          expenseForm.value.splits[0].value = pct;
+          expenseForm.value.splits[1].value = 100 - pct;
+        }
+
+        function startFormSplitDrag(e) {
+          const bar = e.currentTarget;
+          const rect = bar.getBoundingClientRect();
+          const update = (clientX) => {
+            let pct = Math.round(((clientX - rect.left) / rect.width) * 100);
+            pct = Math.max(0, Math.min(100, pct));
+            setFormSplitPercent(pct);
+          };
+          const isTouch = e.type === 'touchstart';
+          if (isTouch) {
+            update(e.touches[0].clientX);
+            const onMove = (ev) => update(ev.touches[0].clientX);
+            const onEnd = () => {
+              document.removeEventListener('touchmove', onMove);
+              document.removeEventListener('touchend', onEnd);
+            };
+            document.addEventListener('touchmove', onMove, { passive: true });
+            document.addEventListener('touchend', onEnd);
+          } else {
+            update(e.clientX);
+            const onMove = (ev) => update(ev.clientX);
+            const onEnd = () => {
+              document.removeEventListener('mousemove', onMove);
+              document.removeEventListener('mouseup', onEnd);
+            };
+            document.addEventListener('mousemove', onMove);
+            document.addEventListener('mouseup', onEnd);
+          }
+        }
+
         // 儲存 cloudTripId 到 localStorage
         watch(cloudTripId, (id) => {
           if (id) localStorage.setItem('hamkke-cloud-trip-id', id);
@@ -1775,8 +1855,8 @@
         }
 
         // 交通方式英字對齊
-        function transportIcon(t) { return { flight: 'plane', walk: 'footprints', taxi: 'car', subway: 'train-front' }[t] || 'footprints'; }
-        function transportLabel(t) { return { flight: '飛行', walk: '步行', taxi: '計程車', subway: '地鐵' }[t] || '步行'; }
+        function transportIcon(t) { return { flight: 'plane', walk: 'footprints', taxi: 'car', bus: 'bus', subway: 'train-front' }[t] || 'footprints'; }
+        function transportLabel(t) { return { flight: '飛行', walk: '步行', taxi: '計程車', bus: '巴士', subway: '地鐵' }[t] || '步行'; }
         function paymentLabel(p) { return { cash: '現金', credit: '信用卡', electronic: '電子票證' }[p] || p; }
 
         function openNavigation(plan, source) {
@@ -2944,6 +3024,7 @@
           cloudTripId, syncStatus, enableCloudSync, joinSharedTrip, shareCloudLink,
           // 共編身份
           myIdentity, displayMemberName, sortedMemberNames,
+          formSplitPercent, startFormSplitDrag, setFormSplitPercent,
           // 彩蛋
           showPlane, triggerPlane, triggerConfetti, startPlaneHold, cancelPlaneHold
         };
