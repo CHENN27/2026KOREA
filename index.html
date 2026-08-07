@@ -599,8 +599,8 @@
     <!-- Plan Modal -->
     <transition name="modal">
       <div v-if="modal === 'plan'" class="fixed inset-0 z-[1000] bg-ink/35 flex items-end justify-center" @click.self="closeModal">
-        <div class="modal-card w-full max-w-[440px] max-h-[90vh] overflow-y-auto rounded-t-[30px] bg-fog p-5 pb-8 shadow-float" role="dialog" aria-modal="true" aria-label="編輯行程">
-          <div class="flex items-center justify-between">
+        <div class="modal-card w-full max-w-[440px] max-h-[90vh] rounded-t-[30px] bg-fog shadow-float flex flex-col" role="dialog" aria-modal="true" aria-label="編輯行程">
+          <div class="flex items-center justify-between z-10 bg-fog pt-5 px-5 pb-3 rounded-t-[30px] shrink-0">
             <h2 class="text-xl font-bold">{{ planForm.id ? '編輯行程' : '新增行程' }}</h2>
             <div class="flex items-center gap-2">
               <button v-if="!planForm.id" type="button" @click="planQuickMode = !planQuickMode" class="text-[10px] font-bold px-2.5 py-1 rounded-full border transition" :class="planQuickMode ? 'bg-sageDeep text-white border-sageDeep' : 'bg-white text-ink/50 border-line'">
@@ -609,7 +609,8 @@
               <button @click="closeModal" class="w-9 h-9 rounded-xl bg-white grid place-items-center"><i data-lucide="x" class="w-4 h-4"></i></button>
             </div>
           </div>
-          <form @submit.prevent="savePlan" class="mt-5 space-y-4">
+          <div class="overflow-y-auto overflow-x-hidden flex-1 px-5 pb-8">
+          <form @submit.prevent="savePlan" class="mt-3 space-y-4">
             <div class="grid grid-cols-2 gap-3">
               <label class="text-xs font-semibold">日期
                 <select v-model="planForm.date" class="mt-1.5 w-full h-12 rounded-2xl bg-white border border-line px-3 font-normal">
@@ -664,6 +665,7 @@
               <button type="submit" class="h-12 flex-1 rounded-2xl bg-sageDeep text-white font-semibold">{{ planQuickMode && !planForm.id ? '快速儲存' : '儲存行程' }}</button>
             </div>
           </form>
+          </div>
         </div>
       </div>
     </transition>
@@ -810,15 +812,16 @@
     <!-- Trip Settings Modal -->
     <transition name="modal">
       <div v-if="modal === 'trip'" class="fixed inset-0 z-[1000] bg-ink/35 flex items-end justify-center" @click.self="closeModal">
-        <div class="modal-card w-full max-w-[440px] max-h-[92vh] overflow-y-auto rounded-t-[30px] bg-fog p-5 pb-8 shadow-float" role="dialog" aria-modal="true" aria-label="旅程設定">
-          <div class="flex items-center justify-between">
+        <div class="modal-card w-full max-w-[440px] max-h-[92vh] rounded-t-[30px] bg-fog shadow-float flex flex-col" role="dialog" aria-modal="true" aria-label="旅程設定">
+          <div class="flex items-center justify-between z-10 bg-fog pt-5 px-5 pb-3 rounded-t-[30px] shrink-0">
             <div>
               <p class="text-[10px] tracking-widest text-sageDeep font-bold">TRIP SETTINGS</p>
               <h2 class="text-xl font-bold">旅程設定</h2>
             </div>
             <button @click="closeModal" class="w-9 h-9 rounded-xl bg-white grid place-items-center"><i data-lucide="x" class="w-4 h-4"></i></button>
           </div>
-          <form @submit.prevent="saveTrip" class="mt-5 space-y-4">
+          <div class="overflow-y-auto overflow-x-hidden flex-1 px-5 pb-8">
+          <form @submit.prevent="saveTrip" class="mt-3 space-y-4">
             <label class="block text-xs font-semibold">旅程名稱
               <input v-model.trim="tripForm.title" type="text" required class="mt-1.5 w-full h-12 rounded-2xl bg-white border border-line px-4 font-normal">
             </label>
@@ -868,6 +871,7 @@
             </div>
             <p class="mt-2 text-[10px] text-ink/40 font-medium">匯出會下載 JSON 檔案，可用匯入還原所有行程與記帳資料</p>
           </div>
+          </div>
         </div>
       </div>
     </transition>
@@ -893,14 +897,15 @@
     <!-- #11: Settlement Modal (結算明細) -->
     <transition name="modal">
       <div v-if="modal === 'settlement'" class="fixed inset-0 z-[1000] bg-ink/35 flex items-end justify-center" @click.self="closeModal">
-        <div class="modal-card w-full max-w-[440px] max-h-[85vh] overflow-y-auto rounded-t-[30px] bg-fog p-5 pb-8 shadow-float" role="dialog" aria-modal="true" aria-label="結算明細">
-          <div class="flex items-center justify-between mb-4">
+        <div class="modal-card w-full max-w-[440px] max-h-[85vh] rounded-t-[30px] bg-fog shadow-float flex flex-col" role="dialog" aria-modal="true" aria-label="結算明細">
+          <div class="flex items-center justify-between z-10 bg-fog pt-5 px-5 pb-3 rounded-t-[30px] shrink-0">
             <div>
               <p class="text-[10px] tracking-widest text-sageDeep font-bold uppercase">Settlement</p>
               <h2 class="text-xl font-bold">結算到目前</h2>
             </div>
             <button @click="closeModal" class="w-9 h-9 rounded-xl bg-white grid place-items-center"><i data-lucide="x" class="w-4 h-4"></i></button>
           </div>
+          <div class="overflow-y-auto overflow-x-hidden flex-1 px-5 pb-8">
 
           <!-- 總覽 -->
           <div class="rounded-[20px] bg-gradient-to-br from-[#def5f1] to-[#e8f2fb] p-4 border border-white shadow-sm mb-4">
@@ -960,6 +965,7 @@
           </div>
           <div v-else class="rounded-[20px] bg-mint/40 p-5 text-center border border-line">
             <p class="text-sm font-bold text-sageDeep">✨ 帳目結清，無需轉帳</p>
+          </div>
           </div>
         </div>
       </div>
@@ -1067,14 +1073,15 @@
     <!-- Trip List Modal (多旅程管理) -->
     <transition name="modal">
       <div v-if="modal === 'tripList'" class="fixed inset-0 z-[1000] bg-ink/35 flex items-end justify-center" @click.self="closeModal">
-        <div class="modal-card w-full max-w-[440px] max-h-[85vh] overflow-y-auto rounded-t-[30px] bg-fog p-5 pb-8 shadow-float" role="dialog" aria-modal="true" aria-label="旅程列表">
-          <div class="flex items-center justify-between mb-5">
+        <div class="modal-card w-full max-w-[440px] max-h-[85vh] rounded-t-[30px] bg-fog shadow-float flex flex-col" role="dialog" aria-modal="true" aria-label="旅程列表">
+          <div class="flex items-center justify-between z-10 bg-fog pt-5 px-5 pb-3 rounded-t-[30px] shrink-0">
             <div>
               <p class="text-[10px] tracking-widest text-sageDeep font-bold">MY TRIPS</p>
               <h2 class="text-xl font-bold">我的旅程</h2>
             </div>
             <button @click="closeModal" class="w-9 h-9 rounded-xl bg-white grid place-items-center"><i data-lucide="x" class="w-4 h-4"></i></button>
           </div>
+          <div class="overflow-y-auto overflow-x-hidden flex-1 px-5 pb-8">
           <div class="space-y-3">
             <button v-for="(t, idx) in tripList" :key="t.id" @click="switchTrip(t.id)" class="w-full rounded-[20px] p-4 text-left flex items-center gap-3 border transition" :class="t.id === currentTripId ? 'bg-mint/50 border-sageDeep shadow-card' : 'bg-white border-line shadow-sm'">
               <span class="w-10 h-10 rounded-2xl grid place-items-center shrink-0 text-base" :class="t.id === currentTripId ? 'bg-sageDeep text-white' : 'bg-fog text-ink/40'">
@@ -1091,6 +1098,7 @@
           <button @click="createNewTrip" class="mt-4 w-full h-12 rounded-2xl border-2 border-dashed border-sage text-sageDeep font-bold text-sm flex items-center justify-center gap-2">
             <i data-lucide="plus" class="w-4 h-4"></i> 建立新旅程
           </button>
+          </div>
         </div>
       </div>
     </transition>
