@@ -227,7 +227,7 @@
         <div class="flex items-center justify-between mb-4">
           <div class="min-w-0 flex-1">
             <p class="text-[11px] font-bold tracking-[.18em] text-sageDeep uppercase">{{ trip.title }}</p>
-            <p class="mt-0.5 text-[10px] text-ink/45 font-semibold">HAMKKE · 帶你走走 <span class="text-ink/30 cursor-pointer" @click="triggerConfetti">v0.5</span>
+            <p class="mt-0.5 text-[10px] text-ink/45 font-semibold">HAMKKE · 帶你走走 <span class="text-ink/30 cursor-pointer" @click="triggerConfetti">v0.6</span>
               <span v-if="syncStatus === 'synced'" class="text-sageDeep ml-1">☁️</span>
               <span v-else-if="syncStatus === 'syncing'" class="text-ink/30 ml-1">⏳</span>
             </p>
@@ -300,8 +300,8 @@
               <p class="mt-1 text-xs text-ink/45">可以到行程管理新增安排</p>
             </div>
 
-            <!-- 底部：預算進度 -->
-            <div class="mt-3 pt-3 border-t border-white/50 flex items-center justify-between gap-3">
+            <!-- 底部：預算進度（已隱藏） -->
+            <div class="mt-3 pt-3 border-t border-white/50 flex items-center justify-between gap-3 hidden">
               <div class="flex items-center gap-2 flex-1">
                 <div class="w-24 h-2.5 rounded-full overflow-hidden bg-mint">
                   <div class="h-full rounded-full transition-all" :class="remainingPercent > 20 ? 'bg-sageDeep' : 'bg-[#d4836b]'" :style="{ width: Math.max(6, 100 - remainingPercent) + '%' }"></div>
@@ -476,6 +476,20 @@
             </button>
           </div>
 
+          <!-- 共用錢包快速狀態 -->
+          <div v-if="trip.sharedWallet > 0" class="rounded-[20px] p-3.5 flex items-center justify-between border shadow-sm" :class="sharedWalletBalance < 0 ? 'bg-[#fef0ee] border-red-200' : sharedWalletBalance < trip.sharedWallet * 0.2 ? 'bg-[#fff5dc] border-[#f0d78c]' : 'bg-white border-line'">
+            <div class="flex items-center gap-2.5">
+              <span class="text-base">💰</span>
+              <div>
+                <p class="text-[10px] font-bold" :class="sharedWalletBalance < 0 ? 'text-red-500' : sharedWalletBalance < trip.sharedWallet * 0.2 ? 'text-[#c9a635]' : 'text-ink/60'">共用錢包</p>
+                <p class="text-sm font-bold" :class="sharedWalletBalance < 0 ? 'text-red-500' : sharedWalletBalance < trip.sharedWallet * 0.2 ? 'text-[#c9a635]' : 'text-ink'">{{ money(sharedWalletBalance) }}</p>
+              </div>
+            </div>
+            <span v-if="sharedWalletBalance < 0" class="text-[10px] font-bold text-red-500 bg-red-200/50 px-2 py-1 rounded-full">⚠️ 已透支</span>
+            <span v-else-if="sharedWalletBalance < trip.sharedWallet * 0.2" class="text-[10px] font-bold text-[#c9a635] bg-[#fff5dc] px-2 py-1 rounded-full">⚠️ 快用完了</span>
+            <span v-else class="text-[10px] text-ink/40 font-semibold">剩餘 {{ Math.round((sharedWalletBalance / trip.sharedWallet) * 100) }}%</span>
+          </div>
+
           <div class="flex items-center justify-between pt-2">
             <h3 class="font-bold text-ink">支出紀錄</h3>
             <select v-model="expenseFilter" class="bg-transparent text-xs font-bold text-sageDeep outline-none">
@@ -484,22 +498,27 @@
             </select>
           </div>
 
-          <div v-if="filteredExpenses.length" class="space-y-2.5">
-            <button
-              v-for="expense in filteredExpenses"
-              :key="expense.id"
-              @click="openExpenseForm(expense)"
-              class="w-full bg-white rounded-[19px] p-3.5 flex items-center gap-3 text-left shadow-card border border-line"
-            >
-              <div class="w-10 h-10 rounded-2xl grid place-items-center text-base shrink-0 bg-mint text-sageDeep">{{ categoryStyle(expense.category).icon }}</div>
-              <div class="min-w-0 flex-1">
-                <p class="font-bold text-sm truncate text-ink">{{ expense.title || expense.category }}</p>
-                <p class="mt-0.5 text-[10px] text-ink/50 font-semibold">{{ shortDate(expense.date) }} · {{ paymentLabel(expense.payment) }}</p>
+          <div v-if="filteredExpenses.length" class="space-y-4">
+            <div v-for="group in groupedExpenses" :key="group.date">
+              <p class="text-[11px] font-bold text-ink/40 uppercase tracking-wide mb-2">{{ group.label }}</p>
+              <div class="space-y-2">
+                <button
+                  v-for="expense in group.items"
+                  :key="expense.id"
+                  @click="openExpenseForm(expense)"
+                  class="w-full bg-white rounded-[19px] p-3.5 flex items-center gap-3 text-left shadow-card border border-line"
+                >
+                  <div class="w-10 h-10 rounded-2xl grid place-items-center shrink-0 bg-mint text-sageDeep"><i :data-lucide="categoryStyle(expense.category).icon" class="w-5 h-5"></i></div>
+                  <div class="min-w-0 flex-1">
+                    <p class="font-bold text-sm truncate text-ink">{{ expense.title || expense.category }}</p>
+                    <p class="mt-0.5 text-[10px] text-ink/50 font-semibold">{{ paymentLabel(expense.payment) }}<span v-if="expense.payers && expense.payers.some(p => p.name === '共用錢包')" class="ml-1 text-[#c9a635]">💰共用</span></p>
+                  </div>
+                  <div class="text-right shrink-0">
+                    <p class="font-bold text-sm text-ink">{{ currencySymbol(expense.currency) }}{{ formatNumber(expense.amount) }}</p>
+                  </div>
+                </button>
               </div>
-              <div class="text-right shrink-0">
-                <p class="font-bold text-sm text-ink">{{ currencySymbol(expense.currency) }}{{ formatNumber(expense.amount) }}</p>
-              </div>
-            </button>
+            </div>
           </div>
           <div v-else class="rounded-[22px] border border-dashed border-sage/30 p-7 text-center text-xs text-ink/40">還沒有支出紀錄</div>
         </section>
@@ -652,8 +671,8 @@
     <!-- Expense Modal -->
     <transition name="modal">
       <div v-if="modal === 'expense'" class="fixed inset-0 z-[1000] bg-ink/35 flex items-end justify-center" @click.self="closeModal">
-        <div class="modal-card w-full max-w-[440px] max-h-[90vh] overflow-y-auto rounded-t-[30px] bg-fog p-5 pb-8 shadow-float" role="dialog" aria-modal="true" aria-label="編輯支出">
-          <div class="flex items-center justify-between">
+        <div class="modal-card w-full max-w-[440px] max-h-[90vh] rounded-t-[30px] bg-fog shadow-float flex flex-col" role="dialog" aria-modal="true" aria-label="編輯支出">
+          <div class="flex items-center justify-between z-10 bg-fog pt-5 px-5 pb-3 rounded-t-[30px] shrink-0">
             <h2 class="text-xl font-bold">{{ expenseForm.id ? '編輯支出' : '新增支出' }}</h2>
             <div class="flex items-center gap-2">
               <button v-if="!expenseForm.id" type="button" @click="expenseQuickMode = !expenseQuickMode" class="text-[10px] font-bold px-2.5 py-1 rounded-full border transition" :class="expenseQuickMode ? 'bg-sageDeep text-white border-sageDeep' : 'bg-white text-ink/50 border-line'">
@@ -662,7 +681,8 @@
               <button @click="closeModal" class="w-9 h-9 rounded-xl bg-white grid place-items-center"><i data-lucide="x" class="w-4 h-4"></i></button>
             </div>
           </div>
-          <form @submit.prevent="saveExpense" class="mt-5 space-y-4">
+          <div class="overflow-y-auto overflow-x-hidden flex-1 px-5 pb-8">
+          <form @submit.prevent="saveExpense" class="space-y-4">
             <!-- 速記模式：金額 + 幣別 + 分類 + 付款人 -->
             <div class="grid grid-cols-[1fr_100px] gap-3">
               <label class="text-xs font-semibold">金額
@@ -683,6 +703,7 @@
               <label class="text-xs font-semibold">付款人
                 <select v-if="expenseForm.payers && expenseForm.payers.length" v-model="expenseForm.payers[0].name" class="mt-1.5 w-full h-12 rounded-2xl bg-white border border-line px-3 font-normal">
                   <option v-for="m in sortedMemberNames" :key="m" :value="m">{{ displayMemberName(m) }}</option>
+                  <option v-if="trip.sharedWallet > 0 || (expenseForm.payers && expenseForm.payers.some(p => p.name === '共用錢包'))" value="共用錢包">共用錢包</option>
                 </select>
               </label>
             </div>
@@ -717,6 +738,7 @@
                   <div v-for="(payer, idx) in (expenseForm.payers || [])" :key="'p'+idx" class="flex gap-2 mt-1">
                     <select v-model="payer.name" class="w-1/2 h-10 rounded-xl bg-fog border border-line px-2 text-xs">
                       <option v-for="m in sortedMemberNames" :key="m" :value="m">{{ displayMemberName(m) }}</option>
+                      <option v-if="trip.sharedWallet > 0 || payer.name === '共用錢包'" value="共用錢包">共用錢包</option>
                     </select>
                     <input v-model.number="payer.amount" type="number" class="w-1/2 h-10 rounded-xl bg-fog border border-line px-2 text-xs" :placeholder="'金額 (' + expenseForm.currency + ')'">
                     <button type="button" @click="expenseForm.payers.splice(idx, 1)" class="w-8 h-10 flex items-center justify-center text-red-400 font-bold" v-if="(expenseForm.payers || []).length > 1">X</button>
@@ -780,6 +802,7 @@
               <button type="submit" class="h-12 flex-1 rounded-2xl bg-sageDeep text-white font-semibold">{{ expenseQuickMode && !expenseForm.id ? '⚡ 快速記帳' : '儲存支出與分帳' }}</button>
             </div>
           </form>
+          </div>
         </div>
       </div>
     </transition>
@@ -816,6 +839,12 @@
             <label class="block text-xs font-semibold">旅伴名稱 (請用逗號分隔)
               <input v-model.trim="tripForm.memberNamesText" class="mt-1.5 w-full h-12 rounded-2xl bg-white border border-line px-4 font-normal" placeholder="例如：我, 旅伴A">
             </label>
+            <!-- 共用錢包設定 -->
+            <div class="rounded-2xl border border-line p-4 bg-white space-y-2">
+              <label class="block text-xs font-bold text-sageDeep">💰 共用錢包金額（TWD）</label>
+              <input v-model.number="tripForm.sharedWallet" type="number" min="0" class="w-full h-12 rounded-2xl bg-fog border border-line px-4 font-normal" placeholder="例如：10000（設為 0 則不啟用）">
+              <p class="text-[10px] text-ink/40 font-medium">設定旅伴共同出資的公用金額，記帳時可選「共用錢包」作為付款人</p>
+            </div>
             <div class="flex gap-3 pt-2">
               <button type="button" @click="openModal('tripList')" class="h-12 px-4 rounded-2xl border border-line text-ink font-semibold text-sm flex items-center gap-1.5">
                 <i data-lucide="list" class="w-4 h-4"></i>我的旅程
@@ -877,6 +906,33 @@
           <div class="rounded-[20px] bg-gradient-to-br from-[#def5f1] to-[#e8f2fb] p-4 border border-white shadow-sm mb-4">
             <p class="text-[10px] text-ink/50 font-bold">共 {{ expenses.length }} 筆支出 · 總計</p>
             <p class="text-2xl font-bold text-ink mt-1">{{ money(totalSpentTwd) }}</p>
+          </div>
+
+          <!-- 共用錢包餘額 -->
+          <div v-if="trip.sharedWallet > 0" class="rounded-[20px] p-4 border shadow-sm mb-4" :class="sharedWalletBalance < 0 ? 'bg-[#fef0ee] border-red-200' : sharedWalletBalance < trip.sharedWallet * 0.2 ? 'bg-[#fff5dc] border-[#f0d78c]' : 'bg-white border-line'">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <span class="text-base">💰</span>
+                <p class="text-xs font-bold text-ink">共用錢包</p>
+              </div>
+              <span class="text-[10px] font-bold" :class="sharedWalletBalance < 0 ? 'text-red-500' : sharedWalletBalance < trip.sharedWallet * 0.2 ? 'text-[#c9a635]' : 'text-ink/50'">
+                {{ sharedWalletBalance < 0 ? '⚠️ 已透支' : sharedWalletBalance < trip.sharedWallet * 0.2 ? '⚠️ 餘額不足' : '' }}
+              </span>
+            </div>
+            <div class="mt-2 flex items-end justify-between">
+              <div>
+                <p class="text-2xl font-bold" :class="sharedWalletBalance < 0 ? 'text-red-500' : sharedWalletBalance < trip.sharedWallet * 0.2 ? 'text-[#c9a635]' : 'text-ink'">{{ money(sharedWalletBalance) }}</p>
+                <p class="text-[10px] text-ink/40 mt-0.5">初始金額 {{ money(trip.sharedWallet) }}</p>
+              </div>
+              <div class="text-right">
+                <p class="text-xs font-bold text-ink/60">已使用 {{ money(sharedWalletSpent) }}</p>
+                <p class="text-[10px] text-ink/40">共 {{ sharedWalletExpenseCount }} 筆</p>
+              </div>
+            </div>
+            <!-- 進度條 -->
+            <div class="mt-3 h-2.5 rounded-full overflow-hidden" :class="sharedWalletBalance < 0 ? 'bg-red-200' : 'bg-[#eaf0ec]'">
+              <div class="h-full rounded-full transition-all" :class="sharedWalletBalance < 0 ? 'bg-red-500' : sharedWalletBalance < trip.sharedWallet * 0.2 ? 'bg-[#c9a635]' : 'bg-sageDeep'" :style="{ width: Math.min(100, Math.max(0, (sharedWalletSpent / trip.sharedWallet) * 100)) + '%' }"></div>
+            </div>
           </div>
 
           <!-- 每人餘額 -->
@@ -1205,6 +1261,9 @@
             if (data.trip && !data.trip.memberNames) {
               data.trip.memberNames = ['我', '旅伴'];
             }
+            if (data.trip && data.trip.sharedWallet === undefined) {
+              data.trip.sharedWallet = 0;
+            }
             if (data.trip && !data.trip.hotelSchedule) {
               data.trip.hotelSchedule = [
                 { hotelIndex: 0, startDate: '2026-08-13', endDate: '2026-08-14' },
@@ -1238,6 +1297,7 @@
             startDate: '2026-08-13',
             endDate: '2026-08-17',
             budget: 50000,
+            sharedWallet: 0,
             memberNames: ['我', '旅伴'],
             hotelSchedule: [
               { hotelIndex: 0, startDate: '2026-08-13', endDate: '2026-08-14' },
@@ -1616,6 +1676,9 @@
         watch([activeTab, modal], () => {
           nextTick(debouncedCreateIcons);
         });
+        watch([expenses, expenseFilter], () => {
+          nextTick(debouncedCreateIcons);
+        });
 
         // setFontSize 重新設計 — 修改 html 根元素 font-size 讓 rem 單位跟著縮放
         const fontScaleMap = { standard: '', large: '17.6px', xlarge: '20px' };
@@ -1697,7 +1760,23 @@
         });
         const remainingBudgetKrw = computed(() => Math.round(remainingBudget.value / latestKrwRate.value));
         const dailyBudgetKrw = computed(() => Math.round(dailyBudget.value / latestKrwRate.value));
-        const filteredExpenses = computed(() => expenseFilter.value === 'all' ? expenses.value : expenses.value.filter(e => e.category === expenseFilter.value));
+        const filteredExpenses = computed(() => {
+          const list = expenseFilter.value === 'all' ? expenses.value : expenses.value.filter(e => e.category === expenseFilter.value);
+          return [...list].sort((a, b) => (b.date || '').localeCompare(a.date || '') || (b.id || '').localeCompare(a.id || ''));
+        });
+        const groupedExpenses = computed(() => {
+          const groups = [];
+          let lastDate = null;
+          filteredExpenses.value.forEach(expense => {
+            const d = expense.date || '';
+            if (d !== lastDate) {
+              groups.push({ date: d, label: shortDate(d), items: [] });
+              lastDate = d;
+            }
+            groups[groups.length - 1].items.push(expense);
+          });
+          return groups;
+        });
         const filteredKoreanPhrases = computed(() => koreanFilter.value === '全部' ? koreanPhrases : koreanPhrases.filter(p => p.category === koreanFilter.value));
 
         // #6: 修復分帳邏輯 — 確保三種模式（平分/指定金額/依比例）計算正確
@@ -1715,60 +1794,76 @@
             const rawPayers = Array.isArray(e.payers) && e.payers.length > 0
               ? e.payers
               : [{ name: members[0], amount: totalOriginal }];
-            let totalPayerAmt = rawPayers.reduce((s, p) => s + (Number(p.amount) || 0), 0);
+
+            // 共用錢包付款的部分不計入個人餘額
+            const personalPayers = rawPayers.filter(p => p.name !== '共用錢包');
+            const walletPayers = rawPayers.filter(p => p.name === '共用錢包');
+            const walletPayerAmt = walletPayers.reduce((s, p) => s + (Number(p.amount) || 0), 0);
+
+            // 若全部由共用錢包支付（無個人付款），此筆不影響個人餘額
+            let totalPayerAmt = personalPayers.reduce((s, p) => s + (Number(p.amount) || 0), 0);
+            const totalAllPayers = totalPayerAmt + walletPayerAmt;
 
             // 若付款人金額皆為 0，視為第一位付款人付全額（原幣）
-            if (totalPayerAmt === 0) {
-              rawPayers[0] = { ...rawPayers[0], amount: totalOriginal };
-              totalPayerAmt = totalOriginal;
+            if (totalAllPayers === 0) {
+              if (personalPayers.length > 0) {
+                personalPayers[0] = { ...personalPayers[0], amount: totalOriginal };
+                totalPayerAmt = totalOriginal;
+              } else {
+                // 純共用錢包，完全跳過個人結算
+                return;
+              }
             }
 
+            // 若全部由共用錢包支付，不影響個人餘額
+            if (personalPayers.length === 0 || (totalPayerAmt === 0 && walletPayerAmt > 0)) {
+              return; // 此筆支出完全從共用錢包出，不計入個人分帳
+            }
+
+            // 計算個人付款佔比（扣除共用錢包部分）
+            const personalAmt = totalAllPayers > 0 ? (totalPayerAmt / totalAllPayers) * amt : amt;
+
             // 依比例分配 TWD 額度（避免使用者輸入加總不等於 amount 導致失衡）
-            rawPayers.forEach(p => {
+            personalPayers.forEach(p => {
               const payerName = p.name || members[0];
               if (balances[payerName] === undefined) balances[payerName] = 0;
               const share = totalPayerAmt > 0 ? (Number(p.amount) || 0) / totalPayerAmt : 0;
-              balances[payerName] += share * amt;
+              balances[payerName] += share * personalAmt;
             });
 
-            // ---- 借方：誰該付 ----
+            // ---- 借方：誰該付（僅計算個人應分擔的部分，排除共用錢包已付的比例）----
             const splitType = e.splitType || 'equal';
             const splits = Array.isArray(e.splits) ? e.splits : [];
             const validSplits = splits.filter(sp => members.includes(sp.name));
 
             if (splitType === 'exact') {
-              // 自行輸入應付金額（原幣）
               const totalSplitOriginal = validSplits.reduce((s, sp) => s + (Number(sp.value) || 0), 0);
               if (totalSplitOriginal > 0) {
-                // 按比例換算，確保借方總額 = 貸方總額
                 validSplits.forEach(sp => {
                   const name = sp.name;
                   const val = Number(sp.value) || 0;
-                  const owedTwd = (val / totalSplitOriginal) * amt;
+                  const owedTwd = (val / totalSplitOriginal) * personalAmt;
                   if (balances[name] !== undefined) balances[name] -= owedTwd;
                 });
               } else {
-                // 回退到平分
-                const splitAmt = amt / (members.length || 1);
+                const splitAmt = personalAmt / (members.length || 1);
                 members.forEach(m => { balances[m] -= splitAmt; });
               }
             } else if (splitType === 'ratio') {
-              // 依比例分攤
               const totalRatio = validSplits.reduce((s, sp) => s + (Number(sp.value) || 0), 0);
               if (totalRatio > 0) {
                 validSplits.forEach(sp => {
                   const name = sp.name;
                   const ratio = (Number(sp.value) || 0) / totalRatio;
-                  if (balances[name] !== undefined) balances[name] -= amt * ratio;
+                  if (balances[name] !== undefined) balances[name] -= personalAmt * ratio;
                 });
               } else {
-                // 比例皆為 0 → 回退平分
-                const splitAmt = amt / (members.length || 1);
+                const splitAmt = personalAmt / (members.length || 1);
                 members.forEach(m => { balances[m] -= splitAmt; });
               }
             } else {
               // equal: 所有成員平分
-              const splitAmt = amt / (members.length || 1);
+              const splitAmt = personalAmt / (members.length || 1);
               members.forEach(m => { balances[m] -= splitAmt; });
             }
           });
@@ -1817,6 +1912,30 @@
           return transfers;
         });
 
+        // 共用錢包：已使用金額（TWD）
+        const sharedWalletSpent = computed(() => {
+          return expenses.value
+            .filter(e => Array.isArray(e.payers) && e.payers.some(p => p.name === '共用錢包'))
+            .reduce((sum, e) => {
+              const rate = Number(e.rate) || 1;
+              // 計算共用錢包在此筆支出中實際付出的金額
+              const walletPayer = e.payers.find(p => p.name === '共用錢包');
+              const totalOriginal = Number(e.amount || 0);
+              const totalPaid = e.payers.reduce((s, p) => s + (Number(p.amount) || 0), 0);
+              // 若只有一位付款人且金額為空，視為付全額
+              const walletAmt = (totalPaid === 0 && e.payers.length === 1) ? totalOriginal : (Number(walletPayer.amount) || 0);
+              return sum + walletAmt * rate;
+            }, 0);
+        });
+        // 共用錢包：餘額
+        const sharedWalletBalance = computed(() => {
+          return (trip.value.sharedWallet || 0) - sharedWalletSpent.value;
+        });
+        // 共用錢包：支出筆數
+        const sharedWalletExpenseCount = computed(() => {
+          return expenses.value.filter(e => Array.isArray(e.payers) && e.payers.some(p => p.name === '共用錢包')).length;
+        });
+
         const showToast = msg => {
           toast.value = msg;
           setTimeout(() => { if (toast.value === msg) toast.value = ''; }, CONFIG.TOAST_DURATION_MS);
@@ -1843,15 +1962,15 @@
 
         function categoryStyle(category) {
           return {
-            '景點': { icon: '📍', bg: 'bg-[#e8e0ef]', pill: 'bg-[#eee8f4] text-[#715d86]' },
-            '用餐': { icon: '🍜', bg: 'bg-[#fff1cf]', pill: 'bg-[#fff3d8] text-[#9b7320]' },
-            '購物': { icon: '🛍️', bg: 'bg-[#dfeaf4]', pill: 'bg-[#e7eff7] text-[#56718c]' },
-            '交通': { icon: '🚕', bg: 'bg-mint', pill: 'bg-mint text-sageDeep' },
-            '住宿': { icon: '🏨', bg: 'bg-[#f9e4dd]', pill: 'bg-[#f9e8e2] text-[#946556]' },
-            '放鬆': { icon: '🌿', bg: 'bg-[#e5efe2]', pill: 'bg-[#eaf3e7] text-[#63805a]' },
-            '票券': { icon: '🎟️', bg: 'bg-[#e8eef7]', pill: 'bg-[#e8eef7] text-[#586d8c]' },
-            '其他': { icon: '✦', bg: 'bg-[#ecefeb]', pill: 'bg-[#ecefeb] text-[#66706a]' }
-          }[category] || { icon: '✦', bg: 'bg-mint', pill: 'bg-mint text-sageDeep' };
+            '景點': { icon: 'camera', bg: 'bg-mint', pill: 'bg-mint text-sageDeep' },
+            '美食': { icon: 'utensils', bg: 'bg-mint', pill: 'bg-mint text-sageDeep' },
+            '購物': { icon: 'shopping-bag', bg: 'bg-mint', pill: 'bg-mint text-sageDeep' },
+            '交通': { icon: 'train-front', bg: 'bg-mint', pill: 'bg-mint text-sageDeep' },
+            '住宿': { icon: 'bed-double', bg: 'bg-mint', pill: 'bg-mint text-sageDeep' },
+            '放鬆': { icon: 'coffee', bg: 'bg-mint', pill: 'bg-mint text-sageDeep' },
+            '票券': { icon: 'ticket', bg: 'bg-mint', pill: 'bg-mint text-sageDeep' },
+            '其他': { icon: 'more-horizontal', bg: 'bg-mint', pill: 'bg-mint text-sageDeep' }
+          }[category] || { icon: 'more-horizontal', bg: 'bg-mint', pill: 'bg-mint text-sageDeep' };
         }
 
         // 交通方式英字對齊
@@ -2092,14 +2211,14 @@
         }
 
         function openTripSettings() {
-          tripForm.value = { ...trip.value, memberNamesText: (trip.value.memberNames || []).join(', ') };
+          tripForm.value = { ...trip.value, memberNamesText: (trip.value.memberNames || []).join(', '), sharedWallet: trip.value.sharedWallet || 0 };
           modal.value = 'trip';
           lockScroll();
           nextTick(() => window.lucide && window.lucide.createIcons());
         }
         function saveTrip() {
           const names = (tripForm.value.memberNamesText || '').split(/[,，、]/).map(n => n.trim()).filter(Boolean);
-          trip.value = { ...tripForm.value, memberNames: names.length ? names : ['我', '旅伴'] };
+          trip.value = { ...tripForm.value, memberNames: names.length ? names : ['我', '旅伴'], sharedWallet: Number(tripForm.value.sharedWallet) || 0 };
           saveTripList();
           closeModal();
           showToast('旅程設定已更新');
@@ -3002,7 +3121,8 @@
           safeUnlocked, safeCodeError, safeCodeRefs, safeContacts, safeInfoType, dragState,
           tripDays, selectedPlans, todayPlans, activeDay, selectedDayName, totalPlans, totalSpentTwd, budgetPercent,
           remainingBudget, remainingDays, dailyBudget, remainingPercent, remainingBudgetKrw, dailyBudgetKrw, tripEnded,
-          filteredExpenses, filteredKoreanPhrases, settlementMessage, settlementDetails, settlementBalances,
+          filteredExpenses, groupedExpenses, filteredKoreanPhrases, settlementMessage, settlementDetails, settlementBalances,
+          sharedWalletSpent, sharedWalletBalance, sharedWalletExpenseCount,
           payerRemainingHint,
           weather, nextStop, remainingStops, selectedDateWeather, weatherTip, todayWeather, todayHotel, getWeatherForDate,
           formatDateRange, shortDate, money, formatNumber, currencySymbol, categoryStyle,
